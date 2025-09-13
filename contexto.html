@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Architectural Project</title>
+  <style>
+    :root {
+      --background: #121212;
+      --card-bg: #1e1e1e;
+      --accent-blue: #3d68ff;
+      --text-primary: #ffffff;
+      --text-secondary: #b0b0b0;
+      --active-item: #252525;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    /* Ajuste para que la pantalla de visualización sea de 1000px de ancho y 700px de alto */
+    body {
+      background-color: var(--background);
+      color: var(--text-primary);
+      display: flex;
+      width: 1200px;
+      height: 700px;
+      margin: auto;
+    }
+
+    /* Sidebar styles */
+    .sidebar {
+      width: 240px;
+      background-color: var(--background);
+      border-right: 1px solid #2a2a2a;
+      padding: 20px 0;
+    }
+
+    .sidebar-header {
+      padding: 0 20px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sidebar-header h2 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .sidebar-category {
+      padding: 15px 20px 5px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      margin: 2px 0;
+      cursor: pointer;
+    }
+
+    .sidebar-item.active {
+      background-color: var(--active-item);
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    .sidebar-item span {
+      margin-left: 12px;
+    }
+
+    .sidebar-item i {
+      width: 24px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    /* Nuevo bloque de botones y usuario en el sidebar */
+    .sidebar-user {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .sidebar-user button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .sidebar-user .user-info {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Main content styles */
+    .main-content {
+      flex: 1;
+      display: flex;
+      background-color: var(--background);
+      overflow-y: auto;
+    }
+
+    /* Sección central: cuadrícula de tarjetas en cuatro columnas.
+       Nota: La burbuja Model 3D se mostrará en una hilera completa (grid-column: span 4) */
+    .room-panel {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .card {
+      background: #2c2c2c;
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #fff;
+      text-align: center;
+    }
+
+    .card p, .card ul {
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .card img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+
+    .card ul {
+      list-style: none;
+      padding: 0;
+      width: 100%;
+    }
+
+    .card ul li {
+      padding: 5px 0;
+      border-bottom: 1px solid #444;
+    }
+
+    .progress-container {
+      width: 100%;
+      background-color: #444;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background-color: #bbb;
+      width: 0%;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Polanco Building</h2>
+      <i class="fas fa-cog"></i>
+    </div>
+
+    <div class="sidebar-category">PROJECT PHASES</div>
+    <div class="sidebar-item">
+      <i class="fas fa-sun"></i>
+      <span>Conceptual Design</span>
+    </div>
+    <div class="sidebar-item">
+      <i class="fas fa-moon"></i>
+      <span>Preliminary Study</span>
+    </div>
+    <div class="sidebar-item">
+      <i class="fas fa-bed"></i>
+      <span>Executive Drawings</span>
+    </div>
+    <div class="sidebar-item">
+      <i class="fas fa-moon"></i>
+      <span>Final Review</span>
+    </div>
+
+    <div class="sidebar-category">BUILDING LEVELS</div>
+    <div class="sidebar-item">
+      <i class="fas fa-door-open"></i>
+      <span>Main Entrance</span>
+    </div>
+    <div class="sidebar-item">
+      <i class="fas fa-tree"></i>
+      <span>Outdoor Area</span>
+    </div>
+    <div class="sidebar-item active">
+      <i class="fas fa-couch"></i>
+      <span>Floor 20</span>
+    </div>
+    <div class="sidebar-item">
+      <i class="fas fa-columns"></i>
+      <span>Corridors</span>
+    </div>
+    <div class="sidebar-item">
+      <i class="fas fa-bed"></i>
+      <span>Apartments</span>
+    </div>
+    <div class="sidebar-item">
+      <i class="fas fa-door-closed"></i>
+      <span>Main Facade</span>
+    </div>
+
+    <div class="sidebar-category">MILESTONES</div>
+    <div class="sidebar-item">
+      <i class="fas fa-clock"></i>
+      <span>Meeting: 10:35 am</span>
+    </div>
+    <div class="sidebar-item">
+      <i class="fas fa-clock"></i>
+      <span>Progress Report</span>
+    </div>
+    <!-- Botones y usuario -->
+    <div class="sidebar-user">
+      <button id="light-btn">Ligth</button>
+      <button id="dark-btn">Dark</button>
+      <div class="user-info">
+         <p>Irving Resendiz</p>
+         <p>irving@ixaia.com</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Sección central: cuadrícula de tarjetas en cuatro columnas -->
+    <div class="room-panel">
+      <div class="container">
+        <!-- Model 3D (burbuja se muestra en una hilera completa) -->
+        <div class="card" style="grid-column: span 4;">
+          <h2>Model 3D</h2>
+          <!-- Contenedor del visor 3D dentro de la burbuja Model 3D -->
+          <div class="model-3d-container">
+            <style>
+              /* Estilos específicos para el visor 3D, aplicados solo dentro de .model-3d-container */
+              .model-3d-container {
+                position: relative;
+                width: 100%;
+                height: 550px;
+                background: #ffffff;
+                overflow: hidden;
+                border-radius: 15px;
+                margin-top: 10px;
+              }
+              .model-3d-container #viewer {
+                width: 100%;
+                height: 100%;
+                background: #eaeaea;
+              }
+              .model-3d-container #instruction {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(25, 25, 25, 0.8);
+                color: #fff;
+                padding: 20px 30px;
+                border-radius: 10px;
+                text-align: center;
+                pointer-events: none;
+                opacity: 1;
+                transition: opacity 0.5s ease;
+                z-index: 10;
+              }
+              .model-3d-container #instruction p {
+                margin: 0;
+                font-size: 16px;
+              }
+            </style>
+            <div id="viewer">
+              <div id="instruction">
+                <p>Drag to rotate, mouse wheel to zoom</p>
+              </div>
+            </div>
+          </div>
+          <!-- Carga de Three.js y OrbitControls (estos scripts se cargan solo para el visor 3D) -->
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+          <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" defer></script>
+          <!-- Inicialización del visor 3D -->
+          <script>
+            window.addEventListener('DOMContentLoaded', function() {
+              let scene, camera, renderer, controls, building;
+
+              const materials = {
+                glass: new THREE.MeshPhysicalMaterial({
+                  color: 0xdddddd,
+                  metalness: 0.7,
+                  roughness: 0.1,
+                  transparent: true,
+                  opacity: 0.8,
+                  envMapIntensity: 1.2
+                }),
+                metal: new THREE.MeshStandardMaterial({
+                  color: 0xaaaaaa,
+                  metalness: 0.9,
+                  roughness: 0.2
+                }),
+                concrete: new THREE.MeshStandardMaterial({
+                  color: 0xcccccc,
+                  roughness: 0.6
+                })
+              };
+
+              init();
+              animate();
+
+              function init() {
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xb0b0b0);
+
+                // Usar el contenedor #viewer dentro de .model-3d-container
+                const viewer = document.getElementById('viewer');
+                camera = new THREE.PerspectiveCamera(45, viewer.clientWidth / viewer.clientHeight, 1, 1000);
+
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(viewer.clientWidth, viewer.clientHeight);
+                renderer.shadowMap.enabled = true;
+                viewer.appendChild(renderer.domElement);
+
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.minDistance = 50;
+                controls.maxDistance = 200;
+                controls.maxPolarAngle = Math.PI / 2;
+                controls.addEventListener('start', removeInstruction);
+
+                setupLighting();
+                createBuilding();
+                createEnvironment();
+
+                camera.position.set(40, 60, 80);
+                controls.update();
+
+                window.addEventListener('resize', onWindowResize);
+              }
+
+              function setupLighting() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+                scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight.position.set(50, 100, 50);
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 2048;
+                directionalLight.shadow.mapSize.height = 2048;
+                scene.add(directionalLight);
+              }
+
+              function createBuilding() {
+                building = new THREE.Group();
+                const totalHeight = 60;
+                const floors = 15;
+                const floorHeight = totalHeight / floors;
+                const baseWidth = 20;
+                for (let i = 0; i < floors; i++) {
+                  const width = baseWidth * (1 - (i / floors) * 0.1);
+                  const geometry = createRoundedFloor(width, floorHeight);
+                  const floorMesh = new THREE.Mesh(geometry, materials.glass);
+                  floorMesh.castShadow = true;
+                  floorMesh.receiveShadow = true;
+                  floorMesh.position.y = i * floorHeight - totalHeight / 2;
+                  createWindows(floorMesh, width, floorHeight);
+                  building.add(floorMesh);
+                }
+
+                const columnMaterial = new THREE.MeshStandardMaterial({
+                  color: 0xc0c0c0,
+                  roughness: 0.4
+                });
+                const columnHeight = totalHeight;
+                const columnGeometry = new THREE.CylinderGeometry(0.3, 0.3, columnHeight, 8);
+                for (let j = 0; j < 8; j++) {
+                  let angle = (j * Math.PI * 2) / 8;
+                  let radius = baseWidth / 2 - 1;
+                  let x = radius * Math.cos(angle);
+                  let z = radius * Math.sin(angle);
+                  const column = new THREE.Mesh(columnGeometry, columnMaterial);
+                  column.position.set(x, 0, z);
+                  column.castShadow = true;
+                  column.receiveShadow = true;
+                  building.add(column);
+                }
+
+                createEntrance(totalHeight);
+                createRoof();
+                scene.add(building);
+              }
+
+              function createRoundedFloor(width, floorHeight) {
+                const radius = width * 0.1;
+                const half = width / 2;
+                const shape = new THREE.Shape();
+                shape.moveTo(-half + radius, -half);
+                shape.lineTo(half - radius, -half);
+                shape.quadraticCurveTo(half, -half, half, -half + radius);
+                shape.lineTo(half, half - radius);
+                shape.quadraticCurveTo(half, half, half - radius, half);
+                shape.lineTo(-half + radius, half);
+                shape.quadraticCurveTo(-half, half, -half, half - radius);
+                shape.lineTo(-half, -half + radius);
+                shape.quadraticCurveTo(-half, -half, -half + radius, -half);
+
+                const extrudeSettings = {
+                  depth: floorHeight,
+                  bevelEnabled: false,
+                  steps: 1
+                };
+                const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+                geometry.rotateX(-Math.PI / 2);
+                return geometry;
+              }
+
+              function createWindows(floorMesh, width, height) {
+                floorMesh.userData.floorHeight = height;
+                const windowGrid = new THREE.Group();
+                const windowWidth = 1.2;
+                const windowHeight = height * 0.7;
+                const windowSpacing = 0.4;
+
+                for (let x = -width / 2 + 1.5; x < width / 2 - 1.5; x += windowWidth + windowSpacing) {
+                  for (let z = -width / 2 + 1.5; z < width / 2 - 1.5; z += windowWidth + windowSpacing) {
+                    const windowGeom = new THREE.BoxGeometry(windowWidth, windowHeight, 0.1);
+                    const windowFrame = new THREE.Mesh(windowGeom, materials.metal);
+                    windowFrame.name = "windowFrame";
+                    windowFrame.userData.windowWidth = windowWidth;
+                    windowFrame.userData.originalWindowHeight = windowHeight;
+                    windowFrame.userData.originalGeometry = windowGeom.clone();
+                    windowFrame.position.set(x, -height / 4, z);
+                    windowFrame.castShadow = true;
+                    windowGrid.add(windowFrame);
+                  }
+                }
+                floorMesh.add(windowGrid);
+              }
+
+              function createEntrance(totalHeight) {
+                const entranceGroup = new THREE.Group();
+                const entranceWidth = 8;
+                const doorGeometry = new THREE.BoxGeometry(2, 4, 0.2);
+                for (let i = -1; i <= 1; i += 2) {
+                  const door = new THREE.Mesh(doorGeometry, materials.metal);
+                  door.position.set(i * 1.5, -totalHeight / 2 + 2, entranceWidth / 2);
+                  entranceGroup.add(door);
+                }
+                const canopy = new THREE.Mesh(
+                  new THREE.BoxGeometry(entranceWidth + 2, 1, 4),
+                  materials.concrete
+                );
+                canopy.position.set(0, -totalHeight / 2 + 0.5, entranceWidth / 2 - 2);
+                entranceGroup.add(canopy);
+                for (let i = 0; i < 8; i++) {
+                  const person = createPerson();
+                  person.position.set(
+                    (Math.random() - 0.5) * entranceWidth,
+                    -totalHeight / 2 + 0.3,
+                    entranceWidth / 2 + Math.random() * 2
+                  );
+                  entranceGroup.add(person);
+                }
+                building.add(entranceGroup);
+              }
+
+              function createRoof() {
+                const roofGroup = new THREE.Group();
+                const roofGeometry = new THREE.BoxGeometry(12, 2, 12);
+                const roof = new THREE.Mesh(roofGeometry, materials.concrete);
+                roof.position.y = 30;
+                roofGroup.add(roof);
+                const acUnit = new THREE.Mesh(
+                  new THREE.BoxGeometry(2, 1, 2),
+                  materials.metal
+                );
+                acUnit.position.set(3, 31.5, 3);
+                roofGroup.add(acUnit);
+                const antennaGroup = new THREE.Group();
+                const baseGeometry = new THREE.BoxGeometry(8, 1, 8);
+                const baseBlock = new THREE.Mesh(baseGeometry, materials.metal);
+                baseBlock.position.y = 31;
+                antennaGroup.add(baseBlock);
+                const step1Geometry = new THREE.BoxGeometry(6, 1, 6);
+                const step1 = new THREE.Mesh(step1Geometry, materials.metal);
+                step1.position.y = 32;
+                antennaGroup.add(step1);
+                const step2Geometry = new THREE.BoxGeometry(4, 1, 4);
+                const step2 = new THREE.Mesh(step2Geometry, materials.metal);
+                step2.position.y = 33;
+                antennaGroup.add(step2);
+                const coneGeometry = new THREE.ConeGeometry(1, 3, 8);
+                const cone = new THREE.Mesh(coneGeometry, materials.metal);
+                cone.position.y = 34.5;
+                antennaGroup.add(cone);
+                roofGroup.add(antennaGroup);
+                building.add(roofGroup);
+              }
+
+              function createPerson() {
+                const person = new THREE.Group();
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+                const body = new THREE.Mesh(
+                  new THREE.CylinderGeometry(0.15, 0.15, 0.8, 8),
+                  bodyMaterial
+                );
+                body.position.y = 0.4;
+                const head = new THREE.Mesh(
+                  new THREE.SphereGeometry(0.18, 8, 8),
+                  bodyMaterial
+                );
+                head.position.y = 0.9;
+                person.add(body);
+                person.add(head);
+                person.castShadow = true;
+                return person;
+              }
+
+              function createCar() {
+                const car = new THREE.Group();
+                const bodyGeometry = new THREE.BoxGeometry(2.5, 0.8, 1.2);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.castShadow = true;
+                body.receiveShadow = true;
+                body.position.y = 0.5;
+                car.add(body);
+                const wheelGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.3, 12);
+                const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+                for (let i = -1; i <= 1; i += 2) {
+                  for (let j = -0.6; j <= 0.6; j += 1.2) {
+                    const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                    wheel.rotation.z = Math.PI / 2;
+                    wheel.position.set(i * 0.9, 0.25, j);
+                    wheel.castShadow = true;
+                    wheel.receiveShadow = true;
+                    car.add(wheel);
+                  }
+                }
+                return car;
+              }
+
+              function createEnvironment() {
+                const ground = new THREE.Mesh(
+                  new THREE.BoxGeometry(200, 10, 200),
+                  new THREE.MeshStandardMaterial({ color: 0x808080 })
+                );
+                ground.position.y = -35;
+                ground.receiveShadow = true;
+                scene.add(ground);
+
+                const roadWidth = 12;
+                const sidewalkWidth = 3;
+                const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x666666 });
+
+                const horizontalRoadZ = [-60, -20, 20, 60];
+                horizontalRoadZ.forEach((z) => {
+                  const road = new THREE.Mesh(
+                    new THREE.PlaneGeometry(200, roadWidth),
+                    roadMaterial
+                  );
+                  road.rotation.x = -Math.PI / 2;
+                  road.position.set(0, -29.9, z);
+                  road.receiveShadow = true;
+                  scene.add(road);
+                  const sidewalkNorth = new THREE.Mesh(
+                    new THREE.PlaneGeometry(200, sidewalkWidth),
+                    new THREE.MeshStandardMaterial({ color: 0xa0a0a0 })
+                  );
+                  sidewalkNorth.rotation.x = -Math.PI / 2;
+                  sidewalkNorth.position.set(0, -29.8, z + roadWidth / 2 + sidewalkWidth / 2);
+                  sidewalkNorth.receiveShadow = true;
+                  scene.add(sidewalkNorth);
+                  const sidewalkSouth = sidewalkNorth.clone();
+                  sidewalkSouth.position.set(0, -29.8, z - roadWidth / 2 - sidewalkWidth / 2);
+                  scene.add(sidewalkSouth);
+                  for (let i = -100; i <= 100; i += 25) {
+                    const tree1 = createTree();
+                    tree1.position.set(i, -29.8, z + roadWidth / 2 + sidewalkWidth + 1);
+                    scene.add(tree1);
+                    const tree2 = createTree();
+                    tree2.position.set(i, -29.8, z - roadWidth / 2 - sidewalkWidth - 1);
+                    scene.add(tree2);
+                  }
+                });
+
+                const verticalRoadX = [-60, -20, 20, 60];
+                verticalRoadX.forEach((x) => {
+                  const road = new THREE.Mesh(
+                    new THREE.PlaneGeometry(200, roadWidth),
+                    roadMaterial
+                  );
+                  road.rotation.x = -Math.PI / 2;
+                  road.rotation.z = Math.PI / 2;
+                  road.position.set(x, -29.9, 0);
+                  road.receiveShadow = true;
+                  scene.add(road);
+                  const sidewalkEast = new THREE.Mesh(
+                    new THREE.PlaneGeometry(200, sidewalkWidth),
+                    new THREE.MeshStandardMaterial({ color: 0xa0a0a0 })
+                  );
+                  sidewalkEast.rotation.x = -Math.PI / 2;
+                  sidewalkEast.rotation.z = Math.PI / 2;
+                  sidewalkEast.position.set(x + roadWidth / 2 + sidewalkWidth / 2, -29.8, 0);
+                  sidewalkEast.receiveShadow = true;
+                  scene.add(sidewalkEast);
+                  const sidewalkWest = sidewalkEast.clone();
+                  sidewalkWest.position.set(x - roadWidth / 2 - sidewalkWidth / 2, -29.8, 0);
+                  scene.add(sidewalkWest);
+                  for (let i = -100; i <= 100; i += 25) {
+                    const tree1 = createTree();
+                    tree1.position.set(x + roadWidth / 2 + sidewalkWidth + 1, -29.8, i);
+                    scene.add(tree1);
+                    const tree2 = createTree();
+                    tree2.position.set(x - roadWidth / 2 - sidewalkWidth - 1, -29.8, i);
+                    scene.add(tree2);
+                  }
+                });
+
+                const verticalRoadXs = verticalRoadX;
+                const horizontalRoadZs = horizontalRoadZ;
+                function isNearRoad(x, z) {
+                  for (let r of verticalRoadXs) {
+                    if (Math.abs(x - r) < roadWidth / 2 + sidewalkWidth + 2) return true;
+                  }
+                  for (let r of horizontalRoadZs) {
+                    if (Math.abs(z - r) < roadWidth / 2 + sidewalkWidth + 2) return true;
+                  }
+                  return false;
+                }
+                let count = 0;
+                while (count < 20) {
+                  const x = -90 + Math.random() * 180;
+                  const z = -90 + Math.random() * 180;
+                  if (isNearRoad(x, z)) continue;
+                  const house = createSmallBuilding(x, z);
+                  scene.add(house);
+                  count++;
+                }
+
+                for (let i = 0; i < 3; i++) {
+                  const mediumBuilding = createMediumBuilding(-30 + i * 30, 30 + Math.random() * 10);
+                  scene.add(mediumBuilding);
+                }
+
+                const skyGeo = new THREE.SphereGeometry(500, 32, 15);
+                const skyMat = new THREE.MeshBasicMaterial({
+                  color: 0xb0c4de,
+                  side: THREE.BackSide
+                });
+                const skyDome = new THREE.Mesh(skyGeo, skyMat);
+                scene.add(skyDome);
+              }
+
+              function createSmallBuilding(x, z) {
+                const floors = Math.random() < 0.5 ? 1 : 2;
+                const floorHeight = 4;
+                const height = floors * floorHeight;
+                const size = 4;
+                const buildingGeometry = new THREE.BoxGeometry(size, height, size);
+                const buildingMaterial = new THREE.MeshStandardMaterial({
+                  color: 0xd3d3d3,
+                  roughness: 0.8
+                });
+                const house = new THREE.Mesh(buildingGeometry, buildingMaterial);
+                house.castShadow = true;
+                house.receiveShadow = true;
+                house.position.set(x, -30 + height / 2, z);
+                return house;
+              }
+
+              function createMediumBuilding(x, z) {
+                const floors = 10;
+                const floorHeight = 4;
+                const totalHeight = floors * floorHeight;
+                const width = 12;
+                const depth = 12;
+                const buildingGroup = new THREE.Group();
+                for (let i = 0; i < floors; i++) {
+                  const floorGeometry = new THREE.BoxGeometry(width, floorHeight, depth);
+                  const floorMesh = new THREE.Mesh(floorGeometry, materials.concrete);
+                  floorMesh.castShadow = true;
+                  floorMesh.receiveShadow = true;
+                  floorMesh.position.y = i * floorHeight;
+                  buildingGroup.add(floorMesh);
+                }
+                buildingGroup.position.set(x, -30, z);
+                return buildingGroup;
+              }
+
+              function createTree() {
+                const tree = new THREE.Group();
+                const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2, 8);
+                const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x5d4037 });
+                const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+                trunk.position.y = 1;
+                trunk.castShadow = true;
+                trunk.receiveShadow = true;
+                tree.add(trunk);
+
+                const crownGeometry = new THREE.ConeGeometry(1, 3, 8);
+                const crownMaterial = new THREE.MeshStandardMaterial({ color: 0x2e7d32 });
+                const crown = new THREE.Mesh(crownGeometry, crownMaterial);
+                crown.position.y = 3;
+                crown.castShadow = true;
+                crown.receiveShadow = true;
+                tree.add(crown);
+                return tree;
+              }
+
+              function removeInstruction() {
+                const instruction = document.getElementById('instruction');
+                if (instruction) {
+                  instruction.style.opacity = 0;
+                  setTimeout(() => {
+                    instruction.style.display = 'none';
+                  }, 500);
+                }
+              }
+
+              function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+              }
+
+              function onWindowResize() {
+                const viewer = document.getElementById('viewer');
+                camera.aspect = viewer.clientWidth / viewer.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(viewer.clientWidth, viewer.clientHeight);
+              }
+            });
+          </script>
+        </div>
+        <!-- Exterior Render -->
+        <div class="card">
+          <h2>Exterior Render</h2>
+          <img src="https://i.pinimg.com/736x/48/ff/96/48ff96314ff1d05f50e1fdb34268d901.jpg" alt="Exterior Render">
+        </div>
+        <!-- Interior Kitchen Render -->
+        <div class="card">
+          <h2>Interior Kitchen Render</h2>
+          <img src="https://i.pinimg.com/736x/4a/53/ee/4a53ee7b35cc2d3fe0938ef5d859a385.jpg" alt="Interior Kitchen Render">
+        </div>
+        <!-- Summary -->
+        <div class="card">
+          <h2>Summary</h2>
+          <canvas id="resumenChart"></canvas>
+        </div>
+        <!-- Budget -->
+        <div class="card">
+          <h2>Budget</h2>
+          <canvas id="presupuestoChart"></canvas>
+        </div>
+        <!-- Energy Performance (solo gráfica) -->
+        <div class="card">
+          <h2>Energy Performance</h2>
+          <canvas id="rendimientoChart"></canvas>
+        </div>
+        <!-- Spaces -->
+        <div class="card">
+          <h2>Spaces</h2>
+          <canvas id="espaciosChart"></canvas>
+        </div>
+        <!-- Renders -->
+        <div class="card">
+          <h2>Renders</h2>
+          <p>Renders: The renderings showcase detailed visual interpretations with innovative creative lighting and highly realistic textures. The list below indicates the current status of each render.</p>
+          <ul>
+            <li>Exterior Render - Completed</li>
+            <li>Interior Kitchen Render - Completed</li>
+            <li>Living Room Render - Pending</li>
+            <li>Garden Render - Pending</li>
+          </ul>
+        </div>
+        <!-- Progress -->
+        <div class="card">
+          <h2>Progress</h2>
+          <p>Progress: The construction advances steadily with well-coordinated phases and stringent quality benchmarks, driving remarkably consistent continuous improvement. The chart below accurately reflects overall progress metrics.</p>
+          <canvas id="avancesChart"></canvas>
+        </div>
+        <!-- Certifications -->
+        <div class="card">
+          <h2>Certifications</h2>
+          <ul>
+            <li>LEED Platinum - Achieved</li>
+            <li>ISO 9001 - In Process</li>
+            <li>Energy Certification - Achieved</li>
+          </ul>
+        </div>
+        <!-- Materials Inventory -->
+        <div class="card">
+          <h2>Materials Inventory</h2>
+          <ul>
+            <li>Bricks: 5000 units</li>
+            <li>Concrete: 200 m³</li>
+            <li>Steel: 50 tons</li>
+            <li>Glass: 100 m²</li>
+          </ul>
+        </div>
+        <!-- Quality Control -->
+        <div class="card">
+          <h2>Quality Control</h2>
+          <p>Quality inspections: 80% completed</p>
+          <div class="progress-container">
+            <div class="progress-bar" id="calidadBar"></div>
+          </div>
+        </div>
+        <!-- Inspections -->
+        <div class="card">
+          <h2>Inspections</h2>
+          <ul>
+            <li>Total: 10</li>
+            <li>Approved: 8</li>
+            <li>Pending: 2</li>
+          </ul>
+        </div>
+        <!-- Customer Comments -->
+        <div class="card">
+          <h2>Customer Comments</h2>
+          <ul>
+            <li>"Excellent progress, very satisfied." - Customer</li>
+            <li>"Impeccable design details." - Customer</li>
+            <li>"Innovative and functional." - Customer</li>
+          </ul>
+        </div>
+        <!-- Estimated Time -->
+        <div class="card">
+          <h2>Estimated Time</h2>
+          <p>Completion in: 6 months</p>
+          <div class="progress-container">
+            <div class="progress-bar" id="tiempoBar"></div>
+          </div>
+        </div>
+        <!-- Costs by Phase -->
+        <div class="card">
+          <h2>Costs by Phase</h2>
+          <canvas id="costosFaseChart"></canvas>
+        </div>
+        <!-- Monthly Energy Consumption -->
+        <div class="card">
+          <h2>Monthly Energy Consumption</h2>
+          <canvas id="consumoMensualChart"></canvas>
+        </div>
+        <!-- Materials Comparison -->
+        <div class="card">
+          <h2>Materials Comparison</h2>
+          <canvas id="comparacionMaterialesChart"></canvas>
+        </div>
+        <!-- Progress by Areas -->
+        <div class="card">
+          <h2>Progress by Areas</h2>
+          <canvas id="progresoAreasChart"></canvas>
+        </div>
+        <!-- Customer Satisfaction -->
+        <div class="card">
+          <h2>Customer Satisfaction</h2>
+          <canvas id="satisfaccionChart"></canvas>
+        </div>
+        <!-- Time vs Progress (solo gráfica) -->
+        <div class="card">
+          <h2>Time vs Progress</h2>
+          <canvas id="tiempoAvanceChart"></canvas>
+        </div>
+        <!-- Environmental Impact -->
+        <div class="card">
+          <h2>Environmental Impact</h2>
+          <canvas id="impactoAmbientalChart"></canvas>
+        </div>
+        <!-- Resource Planning (solo gráfica) -->
+        <div class="card">
+          <h2>Resource Planning</h2>
+          <canvas id="planificacionRecursosChart"></canvas>
+        </div>
+        <!-- Additional Info 1 (solo gráfica) -->
+        <div class="card">
+          <h2>Additional Info 1</h2>
+          <canvas id="info1Chart"></canvas>
+        </div>
+        <!-- Additional Info 2 (solo gráfica) -->
+        <div class="card">
+          <h2>Additional Info 2</h2>
+          <canvas id="info2Chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Font Awesome for icons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+
+  <!-- Chart.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.umd.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const lazyCharts = [
+        {
+          id: 'resumenChart',
+          init: function() {
+            const ctx = document.getElementById('resumenChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'doughnut',
+              data: {
+                labels: ['Completed', 'Pending'],
+                datasets: [{
+                  data: [60, 40],
+                  backgroundColor: ['#bbb', '#555'],
+                  borderColor: '#1c1c1c',
+                  borderWidth: 2
+                }]
+              },
+              options: { responsive: true, plugins: { legend: { display: true, labels: { color: '#ddd' } } } }
+            });
+          }
+        },
+        {
+          id: 'presupuestoChart',
+          init: function() {
+            const ctx = document.getElementById('presupuestoChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'pie',
+              data: {
+                labels: ['Materials', 'Labor', 'Permits', 'Contingencies'],
+                datasets: [{
+                  data: [40, 30, 15, 15],
+                  backgroundColor: ['#bbb', '#aaa', '#999', '#888'],
+                  borderColor: '#1c1c1c',
+                  borderWidth: 2
+                }]
+              },
+              options: { responsive: true, plugins: { legend: { display: true, labels: { color: '#ddd' } } } }
+            });
+          }
+        },
+        {
+          id: 'rendimientoChart',
+          init: function() {
+            const ctx = document.getElementById('rendimientoChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ['Efficiency', 'Consumption', 'Certification'],
+                datasets: [{
+                  label: 'Value',
+                  data: [95, 350, 100],
+                  backgroundColor: ['#ccc', '#bbb', '#aaa'],
+                  borderColor: '#1c1c1c',
+                  borderWidth: 2
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: { beginAtZero: true, ticks: { color: '#ddd' } },
+                  x: { ticks: { color: '#ddd' } }
+                },
+                plugins: { legend: { display: false } }
+              }
+            });
+          }
+        },
+        {
+          id: 'espaciosChart',
+          init: function() {
+            const ctx = document.getElementById('espaciosChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'doughnut',
+              data: {
+                labels: ['Bedrooms', 'Bathrooms', 'Living Rooms', 'Kitchen', 'Outdoor'],
+                datasets: [{
+                  data: [5, 3, 2, 1, 2],
+                  backgroundColor: ['#ddd', '#ccc', '#bbb', '#aaa', '#999'],
+                  borderColor: '#1c1c1c',
+                  borderWidth: 2
+                }]
+              },
+              options: { responsive: true, plugins: { legend: { display: true, labels: { color: '#ddd' } } } }
+            });
+          }
+        },
+        {
+          id: 'avancesChart',
+          init: function() {
+            const ctx = document.getElementById('avancesChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ['Progress'],
+                datasets: [{
+                  label: 'Progress (%)',
+                  data: [60],
+                  backgroundColor: ['#bbb'],
+                  borderColor: '#1c1c1c',
+                  borderWidth: 2
+                }]
+              },
+              options: {
+                indexAxis: 'y',
+                responsive: true,
+                scales: {
+                  x: { beginAtZero: true, max: 100, ticks: { color: '#ddd' } },
+                  y: { ticks: { color: '#ddd' } }
+                },
+                plugins: { legend: { display: false } }
+              }
+            });
+          }
+        },
+        {
+          id: 'costosFaseChart',
+          init: function() {
+            const ctx = document.getElementById('costosFaseChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ['Foundation', 'Structure', 'Finishes', 'Installations', 'Landscaping'],
+                datasets: [{
+                  label: 'Cost (%)',
+                  data: [20, 25, 30, 15, 10],
+                  backgroundColor: ['#ddd', '#ccc', '#bbb', '#aaa', '#999'],
+                  borderColor: '#1c1c1c',
+                  borderWidth: 2
+                }]
+              },
+              options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+          }
+        },
+        {
+          id: 'consumoMensualChart',
+          init: function() {
+            const ctx = document.getElementById('consumoMensualChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                datasets: [{
+                  label: 'kWh',
+                  data: [320,300,350,330,360,340,355,365,350,345,360,370],
+                  backgroundColor: 'rgba(187, 187, 187, 0.2)',
+                  borderColor: '#bbb',
+                  borderWidth: 2,
+                  fill: true,
+                  tension: 0.3
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: { ticks: { color: '#ddd' } },
+                  x: { ticks: { color: '#ddd' } }
+                },
+                plugins: { legend: { labels: { color: '#ddd' } } }
+              }
+            });
+          }
+        },
+        {
+          id: 'comparacionMaterialesChart',
+          init: function() {
+            const ctx = document.getElementById('comparacionMaterialesChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'pie',
+              data: {
+                labels: ['Bricks', 'Concrete', 'Steel', 'Glass'],
+                datasets: [{
+                  data: [40, 30, 20, 10],
+                  backgroundColor: ['#ddd', '#ccc', '#bbb', '#aaa'],
+                  borderColor: '#1c1c1c',
+                  borderWidth: 2
+                }]
+              },
+              options: { responsive: true, plugins: { legend: { labels: { color: '#ddd' } } } }
+            });
+          }
+        },
+        {
+          id: 'progresoAreasChart',
+          init: function() {
+            const ctx = document.getElementById('progresoAreasChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'radar',
+              data: {
+                labels: ['Interior', 'Exterior', 'Infrastructure', 'Finishes', 'Installations'],
+                datasets: [{
+                  label: 'Progress (%)',
+                  data: [70, 60, 80, 50, 65],
+                  backgroundColor: 'rgba(187, 187, 187, 0.2)',
+                  borderColor: '#bbb',
+                  borderWidth: 2,
+                  pointBackgroundColor: '#ddd'
+                }]
+              },
+              options: { responsive: true, scales: { r: { ticks: { color: '#ddd' } } }, plugins: { legend: { labels: { color: '#ddd' } } } }
+            });
+          }
+        },
+        {
+          id: 'satisfaccionChart',
+          init: function() {
+            const ctx = document.getElementById('satisfaccionChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'doughnut',
+              data: {
+                labels: ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied'],
+                datasets: [{
+                  data: [50, 30, 15, 5],
+                  backgroundColor: ['#ddd', '#ccc', '#bbb', '#aaa'],
+                  borderColor: '#1c1c1c',
+                  borderWidth: 2
+                }]
+              },
+              options: { responsive: true, plugins: { legend: { labels: { color: '#ddd' } } } }
+            });
+          }
+        },
+        {
+          id: 'tiempoAvanceChart',
+          init: function() {
+            const ctx = document.getElementById('tiempoAvanceChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                  label: 'Progress (%)',
+                  data: [10, 25, 40, 55, 70, 85],
+                  backgroundColor: 'rgba(187, 187, 187, 0.2)',
+                  borderColor: '#bbb',
+                  borderWidth: 2,
+                  fill: true,
+                  tension: 0.3
+                }]
+              },
+              options: { responsive: true, scales: { y: { ticks: { color: '#ddd' } }, x: { ticks: { color: '#ddd' } } }, plugins: { legend: { labels: { color: '#ddd' } } } }
+            });
+          }
+        },
+        {
+          id: 'impactoAmbientalChart',
+          init: function() {
+            const ctx = document.getElementById('impactoAmbientalChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'radar',
+              data: {
+                labels: ['CO2', 'Energy', 'Water', 'Waste', 'Biodiversity'],
+                datasets: [{
+                  label: 'Impact',
+                  data: [30, 50, 40, 20, 60],
+                  backgroundColor: 'rgba(187, 187, 187, 0.2)',
+                  borderColor: '#bbb',
+                  borderWidth: 2,
+                  pointBackgroundColor: '#ddd'
+                }]
+              },
+              options: { responsive: true, scales: { r: { ticks: { color: '#ddd' } } }, plugins: { legend: { labels: { color: '#ddd' } } } }
+            });
+          }
+        },
+        {
+          id: 'planificacionRecursosChart',
+          init: function() {
+            const ctx = document.getElementById('planificacionRecursosChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ['Month 1', 'Month 2', 'Month 3', 'Month 4'],
+                datasets: [
+                  {
+                    label: 'Labor',
+                    data: [20, 25, 30, 20],
+                    backgroundColor: '#ddd',
+                    borderColor: '#1c1c1c',
+                    borderWidth: 2
+                  },
+                  {
+                    label: 'Materials',
+                    data: [30, 35, 25, 40],
+                    backgroundColor: '#ccc',
+                    borderColor: '#1c1c1c',
+                    borderWidth: 2
+                  },
+                  {
+                    label: 'Equipment',
+                    data: [10, 15, 10, 15],
+                    backgroundColor: '#bbb',
+                    borderColor: '#1c1c1c',
+                    borderWidth: 2
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  x: { stacked: true, ticks: { color: '#ddd' } },
+                  y: { stacked: true, beginAtZero: true, ticks: { color: '#ddd' } }
+                },
+                plugins: { legend: { labels: { color: '#ddd' } } }
+              }
+            });
+          }
+        },
+        {
+          id: 'info1Chart',
+          init: function() {
+            const ctx = document.getElementById('info1Chart').getContext('2d');
+            new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ['Concept', 'Design', 'Approval', 'Construction', 'Finishing'],
+                datasets: [{
+                  label: 'Phase Progress (%)',
+                  data: [80, 70, 60, 50, 40],
+                  backgroundColor: ['#bbb', '#ccc', '#ddd', '#aaa', '#999'],
+                  borderColor: '#1c1c1c',
+                  borderWidth: 2
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: { beginAtZero: true, ticks: { color: '#ddd' } },
+                  x: { ticks: { color: '#ddd' } }
+                },
+                plugins: { legend: { labels: { color: '#ddd' } } }
+              }
+            });
+          }
+        },
+        {
+          id: 'info2Chart',
+          init: function() {
+            const ctx = document.getElementById('info2Chart').getContext('2d');
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                datasets: [{
+                  label: 'Budget Allocation (%)',
+                  data: [25, 35, 20, 20],
+                  backgroundColor: 'rgba(170, 170, 170, 0.2)',
+                  borderColor: '#bbb',
+                  borderWidth: 2,
+                  fill: true,
+                  tension: 0.3
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: { beginAtZero: true, ticks: { color: '#ddd' } },
+                  x: { ticks: { color: '#ddd' } }
+                },
+                plugins: { legend: { labels: { color: '#ddd' } } }
+              }
+            });
+          }
+        }
+      ];
+
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const chartObj = lazyCharts.find(ch => ch.id === entry.target.id);
+            if (chartObj && !entry.target.dataset.initialized) {
+              chartObj.init();
+              entry.target.dataset.initialized = "true";
+              observer.unobserve(entry.target);
+            }
+          }
+        });
+      }, { threshold: 0.1 });
+
+      lazyCharts.forEach(ch => {
+        const canvas = document.getElementById(ch.id);
+        if (canvas) {
+          observer.observe(canvas);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
