@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=900, initial-scale=1.0" />
+    <title>15-Story Building – Extended Scene</title>
+    <style>
+      /* Contenedor principal de 900×550 px, con esquinas redondeadas */
+      #three-container {
+        width: 900px;
+        height: 550px;
+        position: relative;
+        margin: 0 auto;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #ffffff;
+      }
+
+      /* Global */
+      body {
+        margin: 0;
+        background: #ffffff;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      /* ------------------------- */
+      /* CONTROLES Y CLICK HERE    */
+      /* ------------------------- */
+      /* Wrapper para agrupar la burbuja de controles y el "Click Here" */
+      #controlWrapper {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* Burbuja de controles (FACADE, GLASS, METAL, CONCRETE) en tamaño reducido */
+      #controls {
+        background: rgba(25, 25, 25, 0.9);
+        padding: 5px;
+        border-radius: 12px;
+        color: white;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(4px);
+      }
+
+      #controls .control-group {
+        margin: 5px 0;
+      }
+
+      #controls h3 {
+        font-size: 14px;
+        margin: 0 0 5px 0;
+      }
+
+      #controls button {
+        background: #3a3a3a;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        margin: 3px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      #controls button:hover {
+        background: #0078d4;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Botón "Click Here" parpadeante, ubicado debajo de la burbuja de controles */
+      #clickHereBubble {
+        background: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 14px;
+        margin-top: 8px;
+        animation: blink 1s infinite;
+      }
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+
+      /* ------------------------- */
+      /* DATA BUBBLE (sin cambios) */
+      /* ------------------------- */
+      /* La burbuja que contiene la data y las esferas de color se mantiene en tamaño original */
+      #dataContainer {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 100;
+        background: #fff;
+        border-radius: 12px;
+        padding: 10px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+
+      .data-header {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .data-bubbles {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+      }
+
+      /* Burbujitas de data (esferas de 120×120 px) */
+      .bubble {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        padding: 10px;
+      }
+
+      .bubble::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 50%;
+        background: conic-gradient(#00c853, #d50000);
+        z-index: 0;
+      }
+
+      /* Animación acelerada: 0.67s (x3 más rápido que 2s) */
+      .bubble.animate::before {
+        animation: rotateGradient 0.67s linear 1 forwards;
+      }
+
+      @keyframes rotateGradient {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .bubble-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: #fff;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 1s ease-in-out;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      /* ------------------------- */
+      /* INTERACTION BUBBLE        */
+      /* ------------------------- */
+      /* La burbuja para "Move your mouse to interact" se centra en el contenedor */
+      #interactionBubble {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 16px;
+        z-index: 200;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="three-container">
+      <!-- Wrapper para controles y "Click Here" (esquina superior izquierda) -->
+      <div id="controlWrapper">
+        <div id="controls">
+          <div class="control-group">
+            <h3>FACADE</h3>
+            <button onclick="changeFacade('glass')">Glass</button>
+            <button onclick="changeFacade('metal')">Metal</button>
+            <button onclick="changeFacade('concrete')">Concrete</button>
+          </div>
+        </div>
+        <div id="clickHereBubble">Click Here</div>
+      </div>
+
+      <!-- Data Bubble Container (esquina superior derecha) -->
+      <div id="dataContainer">
+        <div class="data-header">DATA</div>
+        <div class="data-bubbles">
+          <div class="bubble" id="costBubble">
+            <div class="bubble-inner" id="costValue">COST:<br /></div>
+          </div>
+          <div class="bubble" id="timeBubble">
+            <div class="bubble-inner" id="timeValue">TIME:<br /></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interaction Bubble (centrada) -->
+      <div id="interactionBubble">Move your mouse to interact</div>
+    </div>
+
+    <!-- Three.js y OrbitControls desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+      let scene, camera, renderer, controls, building;
+      const container = document.getElementById("three-container");
+
+      const materials = {
+        glass: new THREE.MeshPhysicalMaterial({
+          color: 0xdddddd,
+          metalness: 0.7,
+          roughness: 0.1,
+          transparent: true,
+          opacity: 0.8,
+          envMapIntensity: 1.2,
+        }),
+        metal: new THREE.MeshStandardMaterial({
+          color: 0xaaaaaa,
+          metalness: 0.9,
+          roughness: 0.2,
+        }),
+        concrete: new THREE.MeshStandardMaterial({
+          color: 0xcccccc,
+          roughness: 0.6,
+        }),
+      };
+
+      // Datos de cada fachada (en inglés)
+      const facadeData = {
+        glass: {
+          cost: "864,000–1,728,000 USD",
+          time: "6 – 12 months",
+        },
+        metal: {
+          cost: "24,000–756,000 USD",
+          time: "4 – 8 months",
+        },
+        concrete: {
+          cost: "540,000–1,296,000 USD",
+          time: "8 – 14 months",
+        },
+      };
+
+      function init() {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xb0b0b0);
+
+        camera = new THREE.PerspectiveCamera(
+          45,
+          container.clientWidth / container.clientHeight,
+          1,
+          1000
+        );
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.shadowMap.enabled = true;
+        container.appendChild(renderer.domElement);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 50;
+        controls.maxDistance = 200;
+        controls.maxPolarAngle = Math.PI / 2;
+
+        setupLighting();
+        createBuilding();
+        createEnvironment();
+
+        camera.position.set(40, 60, 80);
+        controls.update();
+
+        // Oculta la burbuja de interacción al primer movimiento o toque
+        const interactionBubble = document.getElementById("interactionBubble");
+        function removeInteractionBubble() {
+          if (interactionBubble) {
+            interactionBubble.style.display = "none";
+            window.removeEventListener("mousemove", removeInteractionBubble);
+            window.removeEventListener("touchstart", removeInteractionBubble);
+          }
+        }
+        window.addEventListener("mousemove", removeInteractionBubble);
+        window.addEventListener("touchstart", removeInteractionBubble);
+
+        animate();
+        window.addEventListener("resize", onWindowResize);
+      }
+
+      function setupLighting() {
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(50, 100, 50);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        scene.add(directionalLight);
+      }
+
+      function createBuilding() {
+        building = new THREE.Group();
+        const totalHeight = 60;
+        const floors = 15;
+        const floorHeight = totalHeight / floors;
+        const baseWidth = 20;
+
+        for (let i = 0; i < floors; i++) {
+          const width = baseWidth * (1 - (i / floors) * 0.1);
+          const geometry = createRoundedFloor(width, floorHeight);
+          const floorMesh = new THREE.Mesh(geometry, materials.glass);
+          floorMesh.castShadow = true;
+          floorMesh.receiveShadow = true;
+          floorMesh.position.y = i * floorHeight - totalHeight / 2;
+          createWindows(floorMesh, width, floorHeight);
+          building.add(floorMesh);
+        }
+
+        const columnMaterial = new THREE.MeshStandardMaterial({
+          color: 0xc0c0c0,
+          roughness: 0.4,
+        });
+        const columnHeight = totalHeight;
+        const columnGeometry = new THREE.CylinderGeometry(0.3, 0.3, columnHeight, 8);
+        for (let j = 0; j < 8; j++) {
+          let angle = (j * Math.PI * 2) / 8;
+          let radius = baseWidth / 2 - 1;
+          let x = radius * Math.cos(angle);
+          let z = radius * Math.sin(angle);
+          const column = new THREE.Mesh(columnGeometry, columnMaterial);
+          column.position.set(x, 0, z);
+          column.castShadow = true;
+          column.receiveShadow = true;
+          building.add(column);
+        }
+
+        createEntrance(totalHeight);
+        createRoof();
+        scene.add(building);
+      }
+
+      function createRoundedFloor(width, floorHeight) {
+        const radius = width * 0.1;
+        const half = width / 2;
+        const shape = new THREE.Shape();
+        shape.moveTo(-half + radius, -half);
+        shape.lineTo(half - radius, -half);
+        shape.quadraticCurveTo(half, -half, half, -half + radius);
+        shape.lineTo(half, half - radius);
+        shape.quadraticCurveTo(half, half, half - radius, half);
+        shape.lineTo(-half + radius, half);
+        shape.quadraticCurveTo(-half, half, -half, half - radius);
+        shape.lineTo(-half, -half + radius);
+        shape.quadraticCurveTo(-half, -half, -half + radius, -half);
+
+        const extrudeSettings = {
+          depth: floorHeight,
+          bevelEnabled: false,
+          steps: 1,
+        };
+        const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+        geometry.rotateX(-Math.PI / 2);
+        return geometry;
+      }
+
+      function createWindows(floorMesh, width, height) {
+        floorMesh.userData.floorHeight = height;
+        const windowGrid = new THREE.Group();
+        const windowWidth = 1.2;
+        const windowHeight = height * 0.7;
+        const windowSpacing = 0.4;
+
+        for (
+          let x = -width / 2 + 1.5;
+          x < width / 2 - 1.5;
+          x += windowWidth + windowSpacing
+        ) {
+          for (
+            let z = -width / 2 + 1.5;
+            z < width / 2 - 1.5;
+            z += windowWidth + windowSpacing
+          ) {
+            const windowGeom = new THREE.BoxGeometry(windowWidth, windowHeight, 0.1);
+            const windowFrame = new THREE.Mesh(windowGeom, materials.metal);
+            windowFrame.name = "windowFrame";
+            windowFrame.userData.windowWidth = windowWidth;
+            windowFrame.userData.originalWindowHeight = windowHeight;
+            windowFrame.userData.originalGeometry = windowGeom.clone();
+            windowFrame.position.set(x, -height / 4, z);
+            windowFrame.castShadow = true;
+            windowGrid.add(windowFrame);
+          }
+        }
+        floorMesh.add(windowGrid);
+      }
+
+      function createEntrance(totalHeight) {
+        const entranceGroup = new THREE.Group();
+        const entranceWidth = 8;
+        const doorGeometry = new THREE.BoxGeometry(2, 4, 0.2);
+        for (let i = -1; i <= 1; i += 2) {
+          const door = new THREE.Mesh(doorGeometry, materials.metal);
+          door.position.set(i * 1.5, -totalHeight / 2 + 2, entranceWidth / 2);
+          entranceGroup.add(door);
+        }
+        const canopy = new THREE.Mesh(
+          new THREE.BoxGeometry(entranceWidth + 2, 1, 4),
+          materials.concrete
+        );
+        canopy.position.set(0, -totalHeight / 2 + 0.5, entranceWidth / 2 - 2);
+        entranceGroup.add(canopy);
+        for (let i = 0; i < 8; i++) {
+          const person = createPerson();
+          person.position.set(
+            (Math.random() - 0.5) * entranceWidth,
+            -totalHeight / 2 + 0.3,
+            entranceWidth / 2 + Math.random() * 2
+          );
+          entranceGroup.add(person);
+        }
+        building.add(entranceGroup);
+      }
+
+      function createRoof() {
+        const roofGroup = new THREE.Group();
+        const roofGeometry = new THREE.BoxGeometry(12, 2, 12);
+        const roof = new THREE.Mesh(roofGeometry, materials.concrete);
+        roof.position.y = 30;
+        roofGroup.add(roof);
+
+        const acUnit = new THREE.Mesh(
+          new THREE.BoxGeometry(2, 1, 2),
+          materials.metal
+        );
+        acUnit.position.set(3, 31.5, 3);
+        roofGroup.add(acUnit);
+
+        const antennaGroup = new THREE.Group();
+        const baseGeometry = new THREE.BoxGeometry(8, 1, 8);
+        const baseBlock = new THREE.Mesh(baseGeometry, materials.metal);
+        baseBlock.position.y = 31;
+        antennaGroup.add(baseBlock);
+        const step1Geometry = new THREE.BoxGeometry(6, 1, 6);
+        const step1 = new THREE.Mesh(step1Geometry, materials.metal);
+        step1.position.y = 32;
+        antennaGroup.add(step1);
+        const step2Geometry = new THREE.BoxGeometry(4, 1, 4);
+        const step2 = new THREE.Mesh(step2Geometry, materials.metal);
+        step2.position.y = 33;
+        antennaGroup.add(step2);
+        const coneGeometry = new THREE.ConeGeometry(1, 3, 8);
+        const cone = new THREE.Mesh(coneGeometry, materials.metal);
+        cone.position.y = 34.5;
+        antennaGroup.add(cone);
+
+        roofGroup.add(antennaGroup);
+        building.add(roofGroup);
+      }
+
+      function createPerson() {
+        const person = new THREE.Group();
+        const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+        const body = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.15, 0.15, 0.8, 8),
+          bodyMaterial
+        );
+        body.position.y = 0.4;
+        const head = new THREE.Mesh(
+          new THREE.SphereGeometry(0.18, 8, 8),
+          bodyMaterial
+        );
+        head.position.y = 0.9;
+        person.add(body);
+        person.add(head);
+        person.castShadow = true;
+        return person;
+      }
+
+      function createCar() {
+        const car = new THREE.Group();
+        const bodyGeometry = new THREE.BoxGeometry(2.5, 0.8, 1.2);
+        const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        body.castShadow = true;
+        body.receiveShadow = true;
+        body.position.y = 0.5;
+        car.add(body);
+
+        const wheelGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.3, 12);
+        const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+        for (let i = -1; i <= 1; i += 2) {
+          for (let j = -0.6; j <= 0.6; j += 1.2) {
+            const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+            wheel.rotation.z = Math.PI / 2;
+            wheel.position.set(i * 0.9, 0.25, j);
+            wheel.castShadow = true;
+            wheel.receiveShadow = true;
+            car.add(wheel);
+          }
+        }
+        return car;
+      }
+
+      function createEnvironment() {
+        // Usamos un PlaneGeometry en lugar de BoxGeometry para evitar el parpadeo del piso.
+        const ground = new THREE.Mesh(
+          new THREE.PlaneGeometry(200, 200),
+          new THREE.MeshStandardMaterial({ color: 0x808080 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -30; // El piso superior estará en y = -30
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        const roadWidth = 12;
+        const sidewalkWidth = 3;
+        const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x666666 });
+
+        const horizontalRoadZ = [-60, -20, 20, 60];
+        horizontalRoadZ.forEach((z) => {
+          const road = new THREE.Mesh(
+            new THREE.PlaneGeometry(200, roadWidth),
+            roadMaterial
+          );
+          road.rotation.x = -Math.PI / 2;
+          road.position.set(0, -29.9, z);
+          road.receiveShadow = true;
+          scene.add(road);
+          const sidewalkNorth = new THREE.Mesh(
+            new THREE.PlaneGeometry(200, sidewalkWidth),
+            new THREE.MeshStandardMaterial({ color: 0xa0a0a0 })
+          );
+          sidewalkNorth.rotation.x = -Math.PI / 2;
+          sidewalkNorth.position.set(
+            0,
+            -29.8,
+            z + roadWidth / 2 + sidewalkWidth / 2
+          );
+          sidewalkNorth.receiveShadow = true;
+          scene.add(sidewalkNorth);
+          const sidewalkSouth = sidewalkNorth.clone();
+          sidewalkSouth.position.set(
+            0,
+            -29.8,
+            z - roadWidth / 2 - sidewalkWidth / 2
+          );
+          scene.add(sidewalkSouth);
+          for (let i = -100; i <= 100; i += 25) {
+            const tree1 = createTree();
+            tree1.position.set(i, -29.8, z + roadWidth / 2 + sidewalkWidth + 1);
+            scene.add(tree1);
+            const tree2 = createTree();
+            tree2.position.set(i, -29.8, z - roadWidth / 2 - sidewalkWidth - 1);
+            scene.add(tree2);
+          }
+        });
+
+        const verticalRoadX = [-60, -20, 20, 60];
+        verticalRoadX.forEach((x) => {
+          const road = new THREE.Mesh(
+            new THREE.PlaneGeometry(200, roadWidth),
+            roadMaterial
+          );
+          road.rotation.x = -Math.PI / 2;
+          road.rotation.z = Math.PI / 2;
+          road.position.set(x, -29.9, 0);
+          road.receiveShadow = true;
+          scene.add(road);
+          const sidewalkEast = new THREE.Mesh(
+            new THREE.PlaneGeometry(200, sidewalkWidth),
+            new THREE.MeshStandardMaterial({ color: 0xa0a0a0 })
+          );
+          sidewalkEast.rotation.x = -Math.PI / 2;
+          sidewalkEast.rotation.z = Math.PI / 2;
+          sidewalkEast.position.set(
+            x + roadWidth / 2 + sidewalkWidth / 2,
+            -29.8,
+            0
+          );
+          sidewalkEast.receiveShadow = true;
+          scene.add(sidewalkEast);
+          const sidewalkWest = sidewalkEast.clone();
+          sidewalkWest.position.set(
+            x - roadWidth / 2 - sidewalkWidth / 2,
+            -29.8,
+            0
+          );
+          scene.add(sidewalkWest);
+          for (let i = -100; i <= 100; i += 25) {
+            const tree1 = createTree();
+            tree1.position.set(x + roadWidth / 2 + sidewalkWidth + 1, -29.8, i);
+            scene.add(tree1);
+            const tree2 = createTree();
+            tree2.position.set(x - roadWidth / 2 - sidewalkWidth - 1, -29.8, i);
+            scene.add(tree2);
+          }
+        });
+
+        for (let i = 0; i < 5; i++) {
+          const car = createCar();
+          const zBase =
+            horizontalRoadZ[Math.floor(Math.random() * horizontalRoadZ.length)];
+          const zPos = zBase + (Math.random() - 0.5) * (roadWidth - 2);
+          const xPos = -90 + Math.random() * 180;
+          car.position.set(xPos, -29.9, zPos);
+          scene.add(car);
+        }
+
+        for (let i = 0; i < 15; i++) {
+          const person = createPerson();
+          const zBase =
+            horizontalRoadZ[Math.floor(Math.random() * horizontalRoadZ.length)];
+          const side = Math.random() > 0.5 ? 1 : -1;
+          person.position.set(
+            -90 + Math.random() * 180,
+            -29.8,
+            zBase + side * (roadWidth / 2 + sidewalkWidth + Math.random())
+          );
+          scene.add(person);
+        }
+
+        const verticalRoadXs = verticalRoadX;
+        const horizontalRoadZs = horizontalRoadZ;
+        function isNearRoad(x, z) {
+          for (let r of verticalRoadXs) {
+            if (Math.abs(x - r) < roadWidth / 2 + sidewalkWidth + 2) return true;
+          }
+          for (let r of horizontalRoadZs) {
+            if (Math.abs(z - r) < roadWidth / 2 + sidewalkWidth + 2) return true;
+          }
+          return false;
+        }
+        let count = 0;
+        while (count < 20) {
+          const x = -90 + Math.random() * 180;
+          const z = -90 + Math.random() * 180;
+          if (isNearRoad(x, z)) continue;
+          const house = createSmallBuilding(x, z);
+          scene.add(house);
+          count++;
+        }
+
+        for (let i = 0; i < 3; i++) {
+          const mediumBuilding = createMediumBuilding(
+            -30 + i * 30,
+            30 + Math.random() * 10
+          );
+          scene.add(mediumBuilding);
+        }
+
+        const skyGeo = new THREE.SphereGeometry(500, 32, 15);
+        const skyMat = new THREE.MeshBasicMaterial({
+          color: 0xb0c4de, // Color del cielo: #B0C4DE
+          side: THREE.BackSide,
+        });
+        const skyDome = new THREE.Mesh(skyGeo, skyMat);
+        scene.add(skyDome);
+      }
+
+      function createSmallBuilding(x, z) {
+        const floors = Math.random() < 0.5 ? 1 : 2;
+        const floorHeight = 4;
+        const height = floors * floorHeight;
+        const size = 4;
+        const buildingGeometry = new THREE.BoxGeometry(size, height, size);
+        const buildingMaterial = new THREE.MeshStandardMaterial({
+          color: 0xd3d3d3,
+          roughness: 0.8,
+        });
+        const house = new THREE.Mesh(buildingGeometry, buildingMaterial);
+        house.castShadow = true;
+        house.receiveShadow = true;
+        house.position.set(x, -30 + height / 2, z);
+        return house;
+      }
+
+      function createMediumBuilding(x, z) {
+        const floors = 10;
+        const floorHeight = 4;
+        const totalHeight = floors * floorHeight;
+        const width = 12;
+        const depth = 12;
+        const buildingGroup = new THREE.Group();
+        for (let i = 0; i < floors; i++) {
+          const floorGeometry = new THREE.BoxGeometry(width, floorHeight, depth);
+          const floorMesh = new THREE.Mesh(floorGeometry, materials.concrete);
+          floorMesh.castShadow = true;
+          floorMesh.receiveShadow = true;
+          floorMesh.position.y = i * floorHeight;
+          buildingGroup.add(floorMesh);
+        }
+        buildingGroup.position.set(x, -30, z);
+        return buildingGroup;
+      }
+
+      function createTree() {
+        const tree = new THREE.Group();
+        const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2, 8);
+        const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x5d4037 });
+        const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+        trunk.position.y = 1;
+        trunk.castShadow = true;
+        trunk.receiveShadow = true;
+        tree.add(trunk);
+
+        const crownGeometry = new THREE.ConeGeometry(1, 3, 8);
+        const crownMaterial = new THREE.MeshStandardMaterial({ color: 0x2e7d32 });
+        const crown = new THREE.Mesh(crownGeometry, crownMaterial);
+        crown.position.y = 3;
+        crown.castShadow = true;
+        crown.receiveShadow = true;
+        tree.add(crown);
+        return tree;
+      }
+
+      function changeFacade(type) {
+        building.traverse((child) => {
+          if (child.material && child.name !== "windowFrame") {
+            child.material = materials[type];
+            child.material.needsUpdate = true;
+          }
+          if (child.name === "windowFrame") {
+            if (type === "glass") {
+              child.geometry = child.userData.originalGeometry;
+              child.material = materials.metal;
+              child.material.needsUpdate = true;
+            } else {
+              let newGeom = new THREE.BoxGeometry(
+                child.userData.windowWidth,
+                child.userData.originalWindowHeight,
+                0.1
+              );
+              child.geometry = newGeom;
+              child.material = new THREE.MeshStandardMaterial({ color: 0x888888 });
+              child.material.needsUpdate = true;
+            }
+          }
+        });
+        updateDataBubble(type);
+        // Oculta la burbuja "Click Here" al pulsar un botón de fachada
+        var clickHere = document.getElementById("clickHereBubble");
+        if (clickHere) {
+          clickHere.style.display = "none";
+        }
+        document.querySelectorAll(".bubble").forEach((bubble) => {
+          bubble.classList.remove("animate");
+          void bubble.offsetWidth;
+          bubble.classList.add("animate");
+        });
+      }
+
+      function updateDataBubble(type) {
+        const costValueElem = document.getElementById("costValue");
+        const timeValueElem = document.getElementById("timeValue");
+
+        const costRange = facadeData[type].cost;
+        const timeRange = facadeData[type].time;
+
+        function computeAverage(rangeStr) {
+          const cleaned = rangeStr.replace(/[^\d–\-]/g, "");
+          const parts = cleaned.split(/[-–]/);
+          if (parts.length < 2) return parseFloat(parts[0]);
+          const num1 = parseFloat(parts[0]);
+          const num2 = parseFloat(parts[1]);
+          return (num1 + num2) / 2;
+        }
+
+        let costAvg = computeAverage(costRange);
+        let costDisplay = "";
+        if (costAvg >= 1e6) {
+          costDisplay = (costAvg / 1e6).toFixed(1) + " M $";
+        } else if (costAvg >= 1e3) {
+          costDisplay = (costAvg / 1e3).toFixed(1) + " K $";
+        } else {
+          costDisplay = costAvg + " $";
+        }
+
+        let timeAvg = Math.round(computeAverage(timeRange));
+        let timeDisplay = timeAvg.toString() + " months";
+
+        costValueElem.innerHTML = "COST:<br>" + costDisplay;
+        timeValueElem.innerHTML = "TIME:<br>" + timeDisplay;
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      function onWindowResize() {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      }
+
+      init();
+    </script>
+  </body>
+</html>
