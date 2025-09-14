@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Se fija el viewport a 900x550 px -->
+    <meta name="viewport" content="width=900, initial-scale=1.0" />
+    <title>Cityscape Visualization</title>
+    <style>
+      /* Contenedor fijo con esquinas redondeadas */
+      #three-container {
+        width: 900px;
+        height: 550px;
+        position: relative;
+        margin: 0 auto; /* Centrado horizontal sin margen superior para eliminar tiras blancas */
+        background: #ffffff;
+        overflow: hidden;
+        border-radius: 15px;
+      }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #f0f0f0;
+        font-family: 'Segoe UI', sans-serif;
+      }
+      /* Burbuja de instrucciones (centrada en el contenedor) */
+      #instruction {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(128, 128, 128, 0.8);
+        color: #fff;
+        padding: 20px 30px;
+        border-radius: 15px;
+        text-align: center;
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 0.5s ease;
+        z-index: 10;
+      }
+      #instruction p {
+        margin: 0;
+        font-size: 16px;
+      }
+      /* Menú de selección de ciudad */
+      #menu {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: #a0a0a0;
+        padding: 10px;
+        border: none;
+        border-radius: 15px;
+        font-family: sans-serif;
+        z-index: 20;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      #menu button {
+        margin: 4px;
+        padding: 6px 10px;
+        font-size: 14px;
+        cursor: pointer;
+        background-color: #d3d3d3;
+        border: none;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Contenedor principal para Three.js -->
+    <div id="three-container">
+      <!-- Burbuja de instrucciones en inglés -->
+      <div id="instruction">
+        <p>Drag to rotate, scroll to zoom, and click a button to change city.</p>
+      </div>
+    </div>
+
+    <!-- Three.js y OrbitControls desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+      // Variables globales y materiales
+      let scene, camera, renderer, controls, building;
+      let cityGroup = new THREE.Group();  // Grupo para los volúmenes de la ciudad
+      let anchorPoints = [];              // Centros de cada celda (para posicionar los volúmenes)
+      let parkSet = new Set();            // Índices de celdas que serán “parques” (sin volumen)
+      let pyramidCount = 0;               // Contador para limitar a 5 la cantidad de edificios con pirámide
+
+      const materials = {
+        glass: new THREE.MeshPhysicalMaterial({
+          color: 0xdddddd,
+          metalness: 0.7,
+          roughness: 0.1,
+          transparent: true,
+          opacity: 0.8,
+          envMapIntensity: 1.2
+        }),
+        metal: new THREE.MeshStandardMaterial({
+          color: 0xaaaaaa,
+          metalness: 0.9,
+          roughness: 0.2
+        }),
+        concrete: new THREE.MeshStandardMaterial({
+          color: 0xcccccc,
+          roughness: 0.6
+        })
+      };
+
+      init();
+      animate();
+
+      function init() {
+        scene = new THREE.Scene();
+        // Cambiar el color del cielo a 0xb0c4de (#B0C4DE)
+        scene.background = new THREE.Color(0xb0c4de);
+
+        // Configurar cámara con aspect ratio fijo 900/550
+        camera = new THREE.PerspectiveCamera(
+          45,
+          900 / 550,
+          1,
+          1000
+        );
+        // Se acerca la vista para que no se vea tan lejos (zoom ajustado)
+        camera.position.set(250, 200, 300);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(900, 550);
+        renderer.shadowMap.enabled = true;
+        // Asegurarse de que el canvas ocupe todo el contenedor (evita tiras blancas)
+        renderer.domElement.style.display = "block";
+        document.getElementById("three-container").appendChild(renderer.domElement);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        // Fijar el target al centro del piso
+        controls.target.set(200, 0, 200);
+        controls.minDistance = 200;
+        controls.maxDistance = 500;
+        controls.maxPolarAngle = Math.PI / 2;
+        controls.addEventListener("start", removeInstruction);
+
+        setupLighting();
+
+        // --- Crear el edificio central (15 plantas, ventanas, columnas, etc.) ---
+        createBuilding();
+        // Posicionar el edificio central sobre la celda cuyo centro es (220,220)
+        building.position.set(220, 30, 220);
+        scene.add(building);
+
+        // --- Crear el piso y la malla de celdas (cuadros de 40x40 y rectángulos de 35x35) ---
+        createCustomFloor();
+
+        controls.target.set(200, 0, 200);
+        controls.update();
+
+        createMenu();
+        // Preestablecer los volúmenes correspondientes a TOKYO en la previsualización
+        updateCity("TOKYO");
+      }
+
+      function setupLighting() {
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(50, 100, 50);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        scene.add(directionalLight);
+      }
+
+      // ===================================================
+      // EDIFICIO CENTRAL (15 plantas, ventanas, columnas, etc.)
+      // ===================================================
+      function createBuilding() {
+        building = new THREE.Group();
+        const totalHeight = 60; // De -30 a 30 en Y
+        const floors = 15;
+        const floorHeight = totalHeight / floors;
+        const baseWidth = 20;
+
+        for (let i = 0; i < floors; i++) {
+          const width = baseWidth * (1 - (i / floors) * 0.1);
+          const geometry = createRoundedFloor(width, floorHeight);
+          const floorMesh = new THREE.Mesh(geometry, materials.glass);
+          floorMesh.castShadow = true;
+          floorMesh.receiveShadow = true;
+          floorMesh.position.y = i * floorHeight - totalHeight / 2;
+          createWindows(floorMesh, width, floorHeight);
+          building.add(floorMesh);
+        }
+
+        // Columnas laterales
+        const columnMaterial = new THREE.MeshStandardMaterial({
+          color: 0xc0c0c0,
+          roughness: 0.4
+        });
+        const columnHeight = totalHeight;
+        const columnGeometry = new THREE.CylinderGeometry(0.3, 0.3, columnHeight, 8);
+        for (let j = 0; j < 8; j++) {
+          let angle = (j * Math.PI * 2) / 8;
+          let radius = baseWidth / 2 - 1;
+          let x = radius * Math.cos(angle);
+          let z = radius * Math.sin(angle);
+          const column = new THREE.Mesh(columnGeometry, columnMaterial);
+          column.position.set(x, 0, z);
+          column.castShadow = true;
+          column.receiveShadow = true;
+          building.add(column);
+        }
+
+        createEntrance(totalHeight);
+        createRoof();
+      }
+
+      function createRoundedFloor(width, floorHeight) {
+        const radius = width * 0.1;
+        const half = width / 2;
+        const shape = new THREE.Shape();
+        shape.moveTo(-half + radius, -half);
+        shape.lineTo(half - radius, -half);
+        shape.quadraticCurveTo(half, -half, half, -half + radius);
+        shape.lineTo(half, half - radius);
+        shape.quadraticCurveTo(half, half, half - radius, half);
+        shape.lineTo(-half + radius, half);
+        shape.quadraticCurveTo(-half, half, -half, half - radius);
+        shape.lineTo(-half, -half + radius);
+        shape.quadraticCurveTo(-half, -half, -half + radius, -half);
+
+        const extrudeSettings = {
+          depth: floorHeight,
+          bevelEnabled: false,
+          steps: 1
+        };
+        const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+        geometry.rotateX(-Math.PI / 2);
+        return geometry;
+      }
+
+      function createWindows(floorMesh, width, height) {
+        floorMesh.userData.floorHeight = height;
+        const windowGrid = new THREE.Group();
+        const windowWidth = 1.2;
+        const windowHeight = height * 0.7;
+        const windowSpacing = 0.4;
+
+        for (let x = -width / 2 + 1.5; x < width / 2 - 1.5; x += windowWidth + windowSpacing) {
+          for (let z = -width / 2 + 1.5; z < width / 2 - 1.5; z += windowWidth + windowSpacing) {
+            const windowGeom = new THREE.BoxGeometry(windowWidth, windowHeight, 0.1);
+            const windowFrame = new THREE.Mesh(windowGeom, materials.metal);
+            windowFrame.name = "windowFrame";
+            windowFrame.userData.windowWidth = windowWidth;
+            windowFrame.userData.originalWindowHeight = windowHeight;
+            windowFrame.userData.originalGeometry = windowGeom.clone();
+            windowFrame.position.set(x, -height / 4, z);
+            windowFrame.castShadow = true;
+            windowGrid.add(windowFrame);
+          }
+        }
+        floorMesh.add(windowGrid);
+      }
+
+      function createEntrance(totalHeight) {
+        const entranceGroup = new THREE.Group();
+        const entranceWidth = 8;
+        const doorGeometry = new THREE.BoxGeometry(2, 4, 0.2);
+        for (let i = -1; i <= 1; i += 2) {
+          const door = new THREE.Mesh(doorGeometry, materials.metal);
+          door.position.set(i * 1.5, -totalHeight / 2 + 2, entranceWidth / 2);
+          entranceGroup.add(door);
+        }
+        const canopy = new THREE.Mesh(
+          new THREE.BoxGeometry(entranceWidth + 2, 1, 4),
+          materials.concrete
+        );
+        canopy.position.set(0, -totalHeight / 2 + 0.5, entranceWidth / 2 - 2);
+        entranceGroup.add(canopy);
+
+        for (let i = 0; i < 8; i++) {
+          const person = createPerson();
+          person.position.set(
+            (Math.random() - 0.5) * entranceWidth,
+            -totalHeight / 2 + 0.3,
+            entranceWidth / 2 + Math.random() * 2
+          );
+          entranceGroup.add(person);
+        }
+
+        building.add(entranceGroup);
+      }
+
+      function createRoof() {
+        const roofGroup = new THREE.Group();
+        const roofGeometry = new THREE.BoxGeometry(12, 2, 12);
+        const roof = new THREE.Mesh(roofGeometry, materials.concrete);
+        roof.position.y = 30;
+        roofGroup.add(roof);
+
+        const acUnit = new THREE.Mesh(
+          new THREE.BoxGeometry(2, 1, 2),
+          materials.metal
+        );
+        acUnit.position.set(3, 31.5, 3);
+        roofGroup.add(acUnit);
+
+        const antennaGroup = new THREE.Group();
+        const baseGeometry = new THREE.BoxGeometry(8, 1, 8);
+        const baseBlock = new THREE.Mesh(baseGeometry, materials.metal);
+        baseBlock.position.y = 31;
+        antennaGroup.add(baseBlock);
+        const step1Geometry = new THREE.BoxGeometry(6, 1, 6);
+        const step1 = new THREE.Mesh(step1Geometry, materials.metal);
+        step1.position.y = 32;
+        antennaGroup.add(step1);
+        const step2Geometry = new THREE.BoxGeometry(4, 1, 4);
+        const step2 = new THREE.Mesh(step2Geometry, materials.metal);
+        step2.position.y = 33;
+        antennaGroup.add(step2);
+        const coneGeometry = new THREE.ConeGeometry(1, 3, 8);
+        const cone = new THREE.Mesh(coneGeometry, materials.metal);
+        cone.position.y = 34.5;
+        antennaGroup.add(cone);
+
+        roofGroup.add(antennaGroup);
+        building.add(roofGroup);
+      }
+
+      function createPerson() {
+        const person = new THREE.Group();
+        const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+
+        const body = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.15, 0.15, 0.8, 8),
+          bodyMaterial
+        );
+        body.position.y = 0.4;
+
+        const head = new THREE.Mesh(
+          new THREE.SphereGeometry(0.18, 8, 8),
+          bodyMaterial
+        );
+        head.position.y = 0.9;
+
+        person.add(body);
+        person.add(head);
+        person.castShadow = true;
+        return person;
+      }
+
+      // ===================================================
+      // CREACIÓN DEL PISO Y DE LA REJILLA DE CELDAS (40x40 con rectángulo interior)
+      // ===================================================
+      function createCustomFloor() {
+        // Crear el piso (una caja de 400x20x400)
+        const floorGeometry = new THREE.BoxGeometry(400, 20, 400);
+        const floorMaterial = new THREE.MeshStandardMaterial({ 
+          color: 0xdddddd,
+          polygonOffset: true,
+          polygonOffsetFactor: 1,
+          polygonOffsetUnits: 1
+        });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        // Colocar el piso de modo que su cara superior quede en Y = 0 (centro en Y = -10)
+        floor.position.set(200, -10, 200);
+        floor.receiveShadow = true;
+        floor.renderOrder = 0;
+        scene.add(floor);
+
+        // Crear la malla de celdas (10x10 celdas de 40x40)
+        while (parkSet.size < 12) {
+          parkSet.add(Math.floor(Math.random() * 100));
+        }
+        anchorPoints = []; // Reiniciar puntos de ancla
+        let cellIndex = 0;
+        for (let i = 0; i < 10; i++) {
+          for (let j = 0; j < 10; j++) {
+            const centerX = i * 40 + 20;
+            const centerZ = j * 40 + 20;
+
+            const isPark = parkSet.has(cellIndex);
+
+            // Cuadro exterior de 40x40
+            const outerGeom = new THREE.PlaneGeometry(40, 40);
+            const outerColor = isPark ? 0x013220 : 0x555555;
+            const outerMat = new THREE.MeshBasicMaterial({
+              color: outerColor, 
+              side: THREE.DoubleSide,
+              polygonOffset: true,
+              polygonOffsetFactor: -1,
+              polygonOffsetUnits: -1
+            });
+            const outerSquare = new THREE.Mesh(outerGeom, outerMat);
+            outerSquare.rotation.x = -Math.PI / 2;
+            outerSquare.position.set(centerX, 0.3, centerZ);
+            outerSquare.renderOrder = 1;
+            scene.add(outerSquare);
+
+            // Rectángulo interior de 35x35
+            const innerGeom = new THREE.PlaneGeometry(35, 35);
+            const innerColor = isPark ? 0x013220 : 0x333333;
+            const innerMat = new THREE.MeshBasicMaterial({
+              color: innerColor, 
+              side: THREE.DoubleSide,
+              polygonOffset: true,
+              polygonOffsetFactor: -2,
+              polygonOffsetUnits: -2
+            });
+            const innerSquare = new THREE.Mesh(innerGeom, innerMat);
+            innerSquare.rotation.x = -Math.PI / 2;
+            innerSquare.position.set(centerX, 0.32, centerZ);
+            innerSquare.renderOrder = 2;
+            scene.add(innerSquare);
+
+            // Almacenar el centro para posicionar volúmenes
+            anchorPoints.push(new THREE.Vector3(centerX, 0.35, centerZ));
+            cellIndex++;
+          }
+        }
+      }
+
+      // ===================================================
+      // MENÚ DE SELECCIÓN DE CIUDAD
+      // ===================================================
+      function createMenu() {
+        const menuDiv = document.createElement("div");
+        menuDiv.id = "menu";
+        menuDiv.innerHTML = `
+          <div style="font-weight:bold; margin-bottom:8px;">CITY:</div>
+          <button id="btnTokio">TOKYO</button>
+          <button id="btnNY">NEW YORK</button>
+          <button id="btnCDMX">CDMX</button>
+        `;
+        document.getElementById("three-container").appendChild(menuDiv);
+
+        document.getElementById("btnTokio").addEventListener("click", () => updateCity("TOKYO"));
+        document.getElementById("btnNY").addEventListener("click", () => updateCity("NEW YORK"));
+        document.getElementById("btnCDMX").addEventListener("click", () => updateCity("CDMX"));
+      }
+
+      // Función para asegurar que la parte inferior del volumen toque el piso (y = 0)
+      function groundBuilding(buildingGroup) {
+        let bbox = new THREE.Box3().setFromObject(buildingGroup);
+        let minY = bbox.min.y;
+        if (minY !== 0) {
+          buildingGroup.position.y -= minY;
+        }
+      }
+
+      function updateCity(cityName) {
+        // Reiniciar el contador de edificios con pirámide
+        pyramidCount = 0;
+
+        // Eliminar grupo anterior (si existe)
+        if (cityGroup) {
+          scene.remove(cityGroup);
+        }
+        cityGroup = new THREE.Group();
+
+        let minHeight, maxHeight, extraCount;
+        if (cityName === "TOKYO") {
+          minHeight = 40;
+          maxHeight = 60;
+          extraCount = 20;
+        } else if (cityName === "NEW YORK") {
+          minHeight = 40;
+          maxHeight = 80;
+          extraCount = 10;
+        } else if (cityName === "CDMX") {
+          minHeight = 30;
+          maxHeight = 70;
+          extraCount = 5;
+        }
+
+        // 1. Para cada punto de ancla (excepto parques y la celda del edificio central)
+        for (let i = 0; i < anchorPoints.length; i++) {
+          const pt = anchorPoints[i];
+          if (parkSet.has(i)) continue;
+          if (pt.x === 220 && pt.z === 220) continue;
+          let height = randomInRange(minHeight, maxHeight);
+          let vol = createBuildingVolume(pt.x, pt.z, height);
+          cityGroup.add(vol);
+        }
+
+        // 2. Agregar volúmenes extra en posiciones aleatorias dentro del piso (entre 20 y 380)
+        for (let i = 0; i < extraCount; i++) {
+          let h = randomInRange(minHeight, maxHeight);
+          let x = randomInRange(20, 380);
+          let z = randomInRange(20, 380);
+          let vol = createBuildingVolume(x, z, h);
+          cityGroup.add(vol);
+        }
+
+        scene.add(cityGroup);
+      }
+
+      // Función auxiliar: retorna un número aleatorio en [min, max]
+      function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      // ===================================================
+      // FUNCIONES PARA CREAR LOS EDIFICIOS CON DIFERENTES ESTILOS
+      // ===================================================
+      function createStandardBuilding(height) {
+        const geom = new THREE.BoxGeometry(17.5, height, 17.5);
+        const mat = new THREE.MeshStandardMaterial({
+          color: 0x888888,
+          transparent: true,
+          opacity: 0.9
+        });
+        const mesh = new THREE.Mesh(geom, mat);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        // La base se coloca en y = height/2, por lo que su parte inferior es y = 0
+        mesh.position.y = height / 2;
+        return mesh;
+      }
+
+      function createAntennaBuilding(height) {
+        const group = new THREE.Group();
+        const building = createStandardBuilding(height);
+        group.add(building);
+        // Antena: 10 unidades de alto, radio 0.2
+        const antennaGeom = new THREE.CylinderGeometry(0.2, 0.2, 10, 8);
+        const antennaMat = new THREE.MeshStandardMaterial({ color: 0xd3d3d3 });
+        const antenna = new THREE.Mesh(antennaGeom, antennaMat);
+        antenna.castShadow = true;
+        antenna.receiveShadow = true;
+        antenna.position.y = height + 10 / 2;
+        group.add(antenna);
+        return group;
+      }
+
+      function createSplitBuilding(height) {
+        const group = new THREE.Group();
+        const lowerHeight = height / 2;
+        const upperHeight = height / 2;
+        const mat = new THREE.MeshStandardMaterial({
+          color: 0x888888,
+          transparent: true,
+          opacity: 0.9
+        });
+        // Parte inferior
+        const lowerGeom = new THREE.BoxGeometry(17.5, lowerHeight, 17.5);
+        const lowerMesh = new THREE.Mesh(lowerGeom, mat);
+        lowerMesh.castShadow = true;
+        lowerMesh.receiveShadow = true;
+        lowerMesh.position.y = lowerHeight / 2;
+        group.add(lowerMesh);
+        // Parte superior (huella reducida)
+        const upperSize = 0.7 * 17.5;
+        const upperGeom = new THREE.BoxGeometry(upperSize, upperHeight, upperSize);
+        const upperMesh = new THREE.Mesh(upperGeom, mat);
+        upperMesh.castShadow = true;
+        upperMesh.receiveShadow = true;
+        upperMesh.position.y = lowerHeight + upperHeight / 2;
+        group.add(upperMesh);
+        return group;
+      }
+
+      function createPyramidBuilding(height) {
+        const group = new THREE.Group();
+        const lowerHeight = height * 0.75;
+        const upperHeight = height * 0.25;
+        const mat = new THREE.MeshStandardMaterial({
+          color: 0x888888,
+          transparent: true,
+          opacity: 0.9
+        });
+        // Parte inferior: caja
+        const lowerGeom = new THREE.BoxGeometry(17.5, lowerHeight, 17.5);
+        const lowerMesh = new THREE.Mesh(lowerGeom, mat);
+        lowerMesh.castShadow = true;
+        lowerMesh.receiveShadow = true;
+        lowerMesh.position.y = lowerHeight / 2;
+        group.add(lowerMesh);
+        // Parte superior: pirámide de base cuadrada
+        const pyramidGeom = new THREE.CylinderGeometry(0, 8.75, upperHeight, 4);
+        pyramidGeom.translate(0, upperHeight / 2, 0);
+        const pyramidMesh = new THREE.Mesh(pyramidGeom, mat);
+        pyramidMesh.castShadow = true;
+        pyramidMesh.receiveShadow = true;
+        pyramidMesh.position.y = lowerHeight;
+        group.add(pyramidMesh);
+        return group;
+      }
+
+      function createWedgeBuilding(height) {
+        const group = new THREE.Group();
+        const lowerHeight = height / 2;
+        const mat = new THREE.MeshStandardMaterial({
+          color: 0x888888,
+          transparent: true,
+          opacity: 0.9
+        });
+        // Parte inferior
+        const lowerGeom = new THREE.BoxGeometry(17.5, lowerHeight, 17.5);
+        const lowerMesh = new THREE.Mesh(lowerGeom, mat);
+        lowerMesh.castShadow = true;
+        lowerMesh.receiveShadow = true;
+        lowerMesh.position.y = lowerHeight / 2;
+        group.add(lowerMesh);
+        // Parte superior en forma de cuña: modificar los vértices superiores para inclinar
+        const upperHeight = height / 2;
+        const upperGeom = new THREE.BoxGeometry(17.5, upperHeight, 17.5);
+        const posAttr = upperGeom.attributes.position;
+        const count = posAttr.count;
+        for (let i = 0; i < count; i++) {
+          if (posAttr.getY(i) > 0) {
+            const currentZ = posAttr.getZ(i);
+            posAttr.setZ(i, currentZ + 3);
+          }
+        }
+        posAttr.needsUpdate = true;
+        const upperMesh = new THREE.Mesh(upperGeom, mat);
+        upperMesh.castShadow = true;
+        upperMesh.receiveShadow = true;
+        upperMesh.position.y = lowerHeight + upperHeight / 2;
+        group.add(upperMesh);
+        return group;
+      }
+
+      // ===================================================
+      // MODIFICACIÓN DE createBuildingVolume:
+      // - Primero se suma 15 unidades a la coordenada X (desplazamiento horizontal)
+      // - Luego se ajusta la posición vertical para que la parte inferior del volumen toque el piso (y = 0)
+      // ===================================================
+      function createBuildingVolume(x, z, height) {
+        const r = Math.random();
+        let buildingGroup;
+        if (r < 0.3) {
+          buildingGroup = createStandardBuilding(height);
+        } else if (r < 0.5) {
+          buildingGroup = createAntennaBuilding(height);
+        } else if (r < 0.7) {
+          buildingGroup = createSplitBuilding(height);
+        } else if (r < 0.85) {
+          if (pyramidCount < 5) {
+            buildingGroup = createPyramidBuilding(height);
+            pyramidCount++;
+          } else {
+            buildingGroup = createWedgeBuilding(height);
+          }
+        } else {
+          buildingGroup = createWedgeBuilding(height);
+        }
+        // Primer paso: sumar 15 unidades al valor X
+        // Segundo paso: asegurarse de que la parte inferior toque el piso (y = 0)
+        buildingGroup.position.set(x + 15, 0, z);
+        groundBuilding(buildingGroup);
+        return buildingGroup;
+      }
+
+      function groundBuilding(buildingGroup) {
+        let bbox = new THREE.Box3().setFromObject(buildingGroup);
+        let minY = bbox.min.y;
+        if (minY !== 0) {
+          buildingGroup.position.y -= minY;
+        }
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      function removeInstruction() {
+        const instruction = document.getElementById("instruction");
+        if (instruction) {
+          instruction.style.opacity = 0;
+          setTimeout(() => {
+            instruction.style.display = "none";
+          }, 500);
+        }
+      }
+    </script>
+  </body>
+</html>
