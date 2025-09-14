@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Análisis de Proyecto: Varsovia 36</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Estilos personalizados y configuración de Tailwind */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff; /* Fondo blanco puro */
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.7s ease-in-out, padding 0.5s ease-in-out;
+            padding: 0 1.5rem;
+        }
+        .accordion-item.active .accordion-content {
+            max-height: 5000px; /* Altura suficiente para el contenido */
+            padding: 1.5rem 1.5rem;
+        }
+        .accordion-button .icon {
+            transition: transform 0.3s ease-in-out;
+        }
+        .accordion-item.active .accordion-button .icon {
+            transform: rotate(45deg);
+        }
+        /* Estilo para las tarjetas internas */
+        .info-card {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb; /* Gris claro */
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* --- ESTILOS DE FUENTE --- */
+        .info-card p, .info-card li, .custom-table td, .custom-table th {
+            font-size: 12px;
+            color: #6b7280; /* Gris medio */
+            line-height: 1.6;
+        }
+        .info-card h4 {
+            font-size: 14px; /* Ligeramente más grande para jerarquía */
+            font-weight: 600;
+            color: #1f2937; /* Gris más oscuro */
+            margin-bottom: 0.5rem;
+        }
+        .info-card h5 {
+            font-size: 13px; /* Ligeramente más grande para jerarquía */
+            font-weight: 600;
+            color: #374151; /* Gris oscuro */
+            margin-top: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        .custom-table th {
+             font-weight: 600;
+             color: #374151;
+        }
+        /* Estilos para la tabla */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .custom-table th, .custom-table td {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .custom-table th {
+            background-color: #f9fafb;
+        }
+        .custom-table tr:last-child td {
+            border-bottom: none;
+        }
+        .custom-table .total-row td {
+            font-weight: 700;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <div id="accordion-container" class="space-y-4 w-full pt-10">
+            
+            <!-- 1. Introducción y Visión del Proyecto -->
+            <div class="accordion-item bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+                <button class="accordion-button w-full flex justify-between items-center text-left p-5 focus:outline-none">
+                    <span class="text-lg font-semibold text-gray-900">1. Introducción y Visión del Proyecto</span>
+                    <span class="icon text-2xl text-gray-500">+</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="info-card">
+                        <h4>Resumen Ejecutivo</h4>
+                        <p>Define la estrategia integral para un proyecto icónico en Varsovia 36. El análisis revela un nexo urbano de altísimo valor con robusta demanda económica, vibrante actividad turística y conectividad inmejorable. El problema no es la falta de oferta, sino la necesidad de un producto diferenciado por su excelencia en diseño, integración contextual y capacidad para ofrecer un estilo de vida superior. La solución es un desarrollo de uso mixto de lujo (comercio, oficinas boutique, residencias de alto estándar) para maximizar el ROI, crear un activo patrimonial resiliente y establecer un nuevo referente arquitectónico.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>Concepto Rector: "NEXO URBANO: Santuario Cosmopolita"</h4>
+                        <p><strong>Nexo:</strong> El alma del proyecto es la dualidad. Es un punto de convergencia de negocios, cultura y vida social, manifestado en su basamento comercial y oficinas.</p>
+                        <p><strong>Santuario:</strong> Al mismo tiempo, es un refugio vertical que ofrece exclusividad, bienestar y tranquilidad en medio del epicentro más dinámico de la ciudad, utilizando diseño y tecnología para aislar del ruido y crear un ambiente de calma.</p>
+                    </div>
+                     <div class="info-card">
+                        <h4>Narrativa</h4>
+                        <p class="italic">"En el cruce de caminos donde la historia de la ciudad se encuentra con su futuro, erigimos más que una estructura: un manifiesto. Varsovia 36 es el punto de equilibrio. Hacia afuera, un diálogo con el ritmo vibrante de Reforma. Hacia adentro, una pausa... Es el privilegio de estar en el centro de todo, con la serenidad de estar por encima de todo."</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Análisis de Mercado y Perfil de Usuario -->
+            <div class="accordion-item bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+                <button class="accordion-button w-full flex justify-between items-center text-left p-5 focus:outline-none">
+                    <span class="text-lg font-semibold text-gray-900">2. Análisis de Mercado y Perfil de Usuario</span>
+                    <span class="icon text-2xl text-gray-500">+</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="info-card">
+                            <h4>Perfil Socioeconómico (Ingreso Mensual)</h4>
+                            <canvas id="socioeconomicChart"></canvas>
+                        </div>
+                        <div class="info-card">
+                            <h4>Mercado Inmobiliario ($/m²)</h4>
+                            <canvas id="marketChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="info-card mt-6">
+                        <h4>Perfiles de Usuario y Viaje Experiencial</h4>
+                        <h5>A. El Residente: "El Ejecutivo Global"</h5>
+                        <p><strong>Perfil:</strong> Profesional de alto nivel (30-50 años) que trabaja en Reforma, valora el tiempo, la conveniencia y el diseño. Busca un estilo de vida "llave en mano".</p>
+                        <p><strong>Viaje Experiencial:</strong> Su día transcurre con fluidez entre su departamento domotizado, el gimnasio del edificio, el café de la planta baja y su oficina a 5 minutos caminando. Utiliza las amenidades del edificio para reuniones y se relaja en el rooftop con vistas al Ángel.</p>
+                        <h5>B. El Usuario de Oficina: "La Startup Innovadora"</h5>
+                        <p><strong>Perfil:</strong> Empresa de 5-15 personas (tecnología, consultoría) que busca una dirección prestigiosa sin un gran espacio corporativo. Valora la flexibilidad y un entorno que atraiga talento.</p>
+                        <p><strong>Viaje Experiencial:</strong> El equipo llega fácilmente en transporte público. Disfrutan de un espacio de oficina luminoso y tecnológicamente equipado, y aprovechan la variada oferta gastronómica y de ocio de la zona para comer o realizar actividades de "after-office".</p>
+                        <h5>C. El Visitante: "El Explorador Urbano"</h5>
+                        <p><strong>Perfil:</strong> Turista o viajero de negocios hospedado en los hoteles cercanos. Busca experiencias auténticas, gastronomía de calidad y compras únicas.</p>
+                        <p><strong>Viaje Experiencial:</strong> Atraído por la arquitectura, descubre y consume en la oferta comercial curada de la planta baja (galería de arte, boutique, restaurante de autor).</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>Perfil del Comprador Ideal (Validación Cruzada)</h4>
+                        <p>La demanda está validada por la perfecta alineación de tres factores:</p>
+                        <ul class="list-disc list-inside space-y-2 mt-2">
+                            <li><strong>Perfil Socioeconómico:</strong> Individuo u hogar del segmento A/B y C+.</li>
+                            <li><strong>Actividad Económica:</strong> Trabaja en los sectores de mayor producción de la alcaldía: Servicios Financieros, Seguros y Servicios Profesionales.</li>
+                            <li><strong>Comportamiento Crediticio:</strong> Tiene entre 30 y 59 años, ingresos superiores a 12 UMA y utiliza a la Banca Comercial para adquirir vivienda nueva de valor "Residencial" y "Residencial Plus".</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3. Análisis del Entorno y Ubicación -->
+            <div class="accordion-item bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+                <button class="accordion-button w-full flex justify-between items-center text-left p-5 focus:outline-none">
+                    <span class="text-lg font-semibold text-gray-900">3. Análisis del Entorno y Ubicación</span>
+                    <span class="icon text-2xl text-gray-500">+</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="info-card">
+                        <h4>Análisis Geográfico y Topográfico</h4>
+                        <p><strong>Tipo de Suelo:</strong> Corresponde a la Zona III (Lago), caracterizada por arcillas altamente compresibles. Esto exige una cimentación profunda y robusta (pilotes), siendo un condicionante estructural crítico del proyecto.</p>
+                        <p><strong>Escurrimientos:</strong> Debido a la topografía plana y la consolidación urbana, no existen escurrimientos superficiales. El manejo del agua pluvial dependerá de la infraestructura urbana y los sistemas de captación del proyecto.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>Microcosmos: Colonia Juárez</h4>
+                        <p>Un crisol de identidades que enriquece el valor del proyecto:</p>
+                        <ul class="list-disc list-inside space-y-2 mt-2">
+                            <li><strong>Legado Histórico:</strong> Arquitectura Porfiriana que da prestigio.</li>
+                            <li><strong>Corredor Financiero:</strong> Colindancia con Paseo de la Reforma.</li>
+                            <li><strong>Vibración Cosmopolita:</strong> Actividad 24/7 en la "Zona Rosa" y la multiculturalidad de "K-Town".</li>
+                            <li><strong>Anclas Corporativas:</strong> Presencia de Google, WeWork, etc., confirmando la zona como un hub de la "nueva economía".</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h4>Conectividad: "Paraíso para Caminantes" (Walk Score: 100/100)</h4>
+                        <p>La hiperconectividad es una de las mayores fortalezas y un argumento de venta clave:</p>
+                        <ul class="list-disc list-inside space-y-2 mt-2">
+                            <li><strong>Metro:</strong> Estación Insurgentes (Línea 1) a 5-7 min.</li>
+                            <li><strong>Metrobús:</strong> Líneas 1 y 7 con estaciones a pasos de distancia.</li>
+                            <li><strong>EcoBici:</strong> Altísima densidad de cicloestaciones.</li>
+                            <li><strong>Vialidades:</strong> Acceso inmediato a Reforma, Insurgentes y Chapultepec.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Viabilidad Normativa y Técnica -->
+            <div class="accordion-item bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+                <button class="accordion-button w-full flex justify-between items-center text-left p-5 focus:outline-none">
+                    <span class="text-lg font-semibold text-gray-900">4. Viabilidad Normativa y Técnica</span>
+                    <span class="icon text-2xl text-gray-500">+</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="info-card">
+                        <h4>Certidumbre Normativa (Zonificación HM/8/20/M)</h4>
+                        <p>La viabilidad legal es absoluta (Folio: SEDUVI-DU-CZ-2025-84521), eliminando riesgos regulatorios. La zonificación "HM" (Habitacional Mixto) permite la rentable estrategia de uso mixto.</p>
+                        <ul class="list-disc list-inside space-y-2 mt-2">
+                            <li><strong>Altura Máxima:</strong> 8 niveles / 28.00 metros.</li>
+                            <li><strong>Área Libre Mínima:</strong> 20% (60.00 m²).</li>
+                            <li><strong>Superficie del Predio:</strong> 300.00 m².</li>
+                            <li><strong>COS (Coef. Ocupación):</strong> 0.80 (Huella máxima: 240.00 m²).</li>
+                            <li><strong>CUS (Coef. Utilización):</strong> 6.4.</li>
+                            <li><strong>Estacionamiento:</strong> Hasta 4 niveles de sótano (no cuantificables para SMC).</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h4>Superficie Máxima de Construcción (SMC)</h4>
+                        <canvas id="smcChart"></canvas>
+                        <p class="text-center mt-2">El proyecto utiliza el 97.4% de la superficie construible permitida (1,870 m² de 1,920 m²), maximizando el potencial del predio.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Propuesta de Diseño y Arquitectura -->
+            <div class="accordion-item bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+                <button class="accordion-button w-full flex justify-between items-center text-left p-5 focus:outline-none">
+                    <span class="text-lg font-semibold text-gray-900">5. Propuesta de Diseño y Arquitectura</span>
+                    <span class="icon text-2xl text-gray-500">+</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="info-card">
+                        <h4>Programa Arquitectónico Cuantitativo</h4>
+                        <div class="overflow-x-auto">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Zona / Nivel</th>
+                                        <th>Espacio</th>
+                                        <th>Superficie (m²)</th>
+                                        <th>Notas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>SÓTANOS</td><td>Estacionamiento (4 niveles)</td><td>~3,000</td><td>No cuenta para SMC</td></tr>
+                                    <tr><td>PLANTA BAJA</td><td>Lobby y Locales Comerciales</td><td>250</td><td>Máxima exposición</td></tr>
+                                    <tr><td>NIVEL 2</td><td>Oficinas Boutique</td><td>220</td><td>Demanda del sector</td></tr>
+                                    <tr><td>NIVEL 3</td><td>Oficinas Boutique</td><td>220</td><td>Demanda del sector</td></tr>
+                                    <tr><td>NIVEL 4</td><td>Amenidades / Business Center</td><td>220</td><td>Diferenciador clave</td></tr>
+                                    <tr><td>NIVEL 5</td><td>Residencial - 2 Deptos. (1 Rec)</td><td>170</td><td>Mercado DINKs/Renta</td></tr>
+                                    <tr><td>NIVEL 6</td><td>Residencial - 2 Deptos. (1 Rec)</td><td>170</td><td>Mercado DINKs/Renta</td></tr>
+                                    <tr><td>NIVEL 7</td><td>Residencial - 1 Depto. (2 Rec)</td><td>170</td><td>Tipología "Estándar de Oro"</td></tr>
+                                    <tr><td>NIVEL 8</td><td>Residencial - PH (2 Rec + Terraza)</td><td>150</td><td>Producto de máximo valor</td></tr>
+                                    <tr class="total-row"><td>TOTAL SMC</td><td></td><td>1,870</td><td>Dentro de los 1,920 m² permitidos</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <h4>Diseño y Funcionalidad por Nivel</h4>
+                        <h5>Sótanos</h5>
+                        <p>Se proponen 4 niveles de estacionamiento con acceso vehicular controlado y seguro, una amenidad crítica en una zona con alta demanda y poca oferta de aparcamiento.</p>
+                        <h5>Planta Baja (Nexo)</h5>
+                        <p>Diseñada como un basamento transparente y permeable para invitar al flujo peatonal. Alberga locales comerciales con máxima exposición a la calle y un imponente lobby de doble altura que crea una primera impresión de lujo. Un acceso secundario, más discreto, garantiza la privacidad para residentes y usuarios de oficinas.</p>
+                        <h5>Niveles 2 y 3 (Oficinas)</h5>
+                        <p>Plantas eficientes para oficinas boutique, diseñadas para ser luminosas y tecnológicamente equipadas, respondiendo a la demanda de startups y consultoras que buscan una dirección prestigiosa y un entorno que atraiga talento.</p>
+                        <h5>Nivel 4 (Amenidades)</h5>
+                        <p>Un nivel de transición que sirve como corazón social y funcional del edificio. Incluye un Business Center con salas de juntas, un gimnasio bien equipado y otras amenidades con acceso controlado, sirviendo tanto a residentes como a usuarios de oficinas.</p>
+                        <h5>Niveles 5 a 7 (Residencias)</h5>
+                        <p>Los departamentos están diseñados bajo un concepto de "Santuario". Cuentan con cocinas abiertas y áreas sociales integradas para maximizar la sensación de amplitud. Todos incluyen balcones o terrazas y están orientados estratégicamente al Norte/Noreste para enmarcar las vistas más valiosas (Reforma, El Ángel). Se proponen tipologías de 1 y 2 recámaras para responder a la demanda de profesionales solteros, parejas (DINKs) y la tipología "estándar de oro" del mercado.</p>
+                        <h5>Nivel 8 (Penthouse)</h5>
+                        <p>La joya del proyecto. Un departamento de 2 recámaras con una amplia terraza privada, concebido como el producto de máximo valor y aspiracional, ofreciendo el mayor grado de lujo y exclusividad.</p>
+                        <h5>Azotea (Rooftop)</h5>
+                        <p>Una amenidad de lujo de uso exclusivo para residentes. Un espacio social con vistas panorámicas, ideal para la relajación y el entretenimiento, reforzando el sentido de comunidad y exclusividad.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>Principios de Diseño y Materialidad</h4>
+                        <p><strong>Volumetría y Fachada:</strong> Basamento transparente de 2 niveles y un cuerpo superior de 6 niveles con fachada rítmica de parteluces verticales. Estos actúan como sombreado pasivo y dialogan con la verticalidad de las torres de Reforma.</p>
+                        <p><strong>Materialidad Sensorial:</strong> Paleta honesta que comunica lujo y durabilidad. Exteriores: Concreto aparente, cristal de alta eficiencia, aluminio negro, madera tecnológica. Interiores: Mármol travertino, madera de ingeniería (Nogal/Roble), herrería negra, detalles en latón.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Sostenibilidad, Ingeniería y Clima -->
+            <div class="accordion-item bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+                <button class="accordion-button w-full flex justify-between items-center text-left p-5 focus:outline-none">
+                    <span class="text-lg font-semibold text-gray-900">6. Sostenibilidad, Ingeniería y Clima</span>
+                    <span class="icon text-2xl text-gray-500">+</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="info-card">
+                        <h4>Análisis Climático y Vistas</h4>
+                        <p><strong>Recorrido Solar:</strong> Las fachadas Este y Oeste son las más problemáticas por sobrecalentamiento, requiriendo sombreado. La fachada Sur es ideal para captar calor en invierno.</p>
+                        <p><strong>Vistas Valiosas:</strong> Las vistas más importantes son al Norte/Noreste (Paseo de la Reforma, Ángel de la Independencia) y deben ser maximizadas en las áreas nobles.</p>
+                        <p><strong>Entorno Sensorial:</strong> La zona es ruidosa, lo que exige ventanería de alta gama con doble acristalamiento para cumplir la promesa del "Santuario".</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>Estructura e Ingenierías</h4>
+                        <p><strong>Estructura:</strong> Concreto armado con núcleo central rígido y cimentación profunda (pilotes de control) como respuesta directa e ineludible al suelo Zona III y la alta sismicidad de la CDMX.</p>
+                        <p><strong>Ingenierías:</strong> Concentradas en ductos verticales y distribuidas horizontalmente a través de plafones para un fácil mantenimiento y garantizar la limpieza visual que exige el mercado de lujo.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>Estrategia de Sostenibilidad y Wellness</h4>
+                        <p>El paisajismo y las tecnologías verdes no son decoración, sino una narrativa de marketing potente:</p>
+                        <ul class="list-disc list-inside space-y-2 mt-2">
+                            <li><strong>Energía:</strong> Paneles fotovoltaicos y calentadores solares.</li>
+                            <li><strong>Agua:</strong> Sistema de captación pluvial y muebles de baño de bajo consumo.</li>
+                            <li><strong>Materiales:</strong> Prioridad a materiales de bajo VOC y de origen local.</li>
+                            <li><strong>Biofilia y Calidad del Aire:</strong> Muros verdes, selección de plantas nativas (Fresno, Liquidámbar) para filtrar contaminantes y atraer fauna (colibríes), y sistemas de filtración de aire de alta eficiencia.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Justificación Estratégica -->
+            <div class="accordion-item bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+                <button class="accordion-button w-full flex justify-between items-center text-left p-5 focus:outline-none">
+                    <span class="text-lg font-semibold text-gray-900">7. Justificación Estratégica</span>
+                    <span class="icon text-2xl text-gray-500">+</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="info-card">
+                        <h4>Fundamento de las Decisiones</h4>
+                        <p>Cada decisión de diseño y estrategia es una respuesta directa y lógica a los datos analizados. La propuesta no se basa en especulaciones, sino en una profunda comprensión del mercado, el entorno y la normativa.</p>
+                        <ul class="list-disc list-inside space-y-2 mt-2">
+                            <li><strong>Uso Mixto:</strong> Justificado por la zonificación "HM" y la necesidad de diversificar ingresos para mitigar riesgos, respondiendo a la demanda de servicios profesionales y el alto flujo peatonal.</li>
+                            <li><strong>Diseño de Lujo:</strong> Responde al poder adquisitivo comprobado (Segmento A/B, C+) y a la necesidad de diferenciación en un mercado homogéneo.</li>
+                            <li><strong>Separación de Flujos:</strong> Es una decisión fundamental para poder comercializar el proyecto a tres perfiles de usuario distintos sin sacrificar la exclusividad y seguridad del residente.</li>
+                            <li><strong>Inversión en Estructura:</strong> La cimentación de pilotes, aunque costosa, es una respuesta ineludible al análisis geotécnico (suelo Zona III) para proteger la inversión a largo plazo.</li>
+                             <li><strong>Inversión en Sostenibilidad:</strong> No son gastos, son inversiones que crean diferenciadores de lujo (ahorro, salud, bienestar) que justifican un precio premium y apelan al mercado objetivo.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. Conclusiones y Recomendaciones -->
+            <div class="accordion-item bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+                <button class="accordion-button w-full flex justify-between items-center text-left p-5 focus:outline-none">
+                    <span class="text-lg font-semibold text-gray-900">8. Conclusiones y Recomendaciones</span>
+                    <span class="icon text-2xl text-gray-500">+</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="info-card">
+                        <h4>"Joyas" Estratégicas Finales</h4>
+                        <ul class="list-disc list-inside space-y-2 mt-2">
+                            <li><strong>La Triangulación de la Demanda:</strong> El bajo riesgo del proyecto se confirma al validar la demanda desde tres fuentes independientes: perfil socioeconómico, motor económico de la zona y comportamiento crediticio.</li>
+                            <li><strong>El Ecosistema se Auto-Valida:</strong> El mercado de oficinas atrae a las empresas que emplean a los ejecutivos que compran las viviendas, creando un círculo virtuoso.</li>
+                            <li><strong>2 Recámaras como "Estándar de Oro":</strong> Es la tipología más líquida y segura del mercado, respondiendo a una demanda probada.</li>
+                            <li><strong>Sostenibilidad como Narrativa de Lujo:</strong> Las estrategias de bienestar y sostenibilidad son diferenciadores clave que apelan directamente al mercado objetivo y justifican un precio premium.</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h4>Recomendación Final y Próximos Pasos</h4>
+                        <p><strong>Recomendación:</strong> Proceder con el proyecto con un alto grado de confianza.</p>
+                        <p><strong>Próximos Pasos:</strong></p>
+                        <ol class="list-decimal list-inside space-y-2 mt-2">
+                            <li>Contratar a una firma de arquitectura de primer nivel para desarrollar el diseño conceptual.</li>
+                            <li>Realizar un estudio de mecánica de suelos detallado para el diseño de la cimentación.</li>
+                            <li>Desarrollar un pro-forma financiero detallado basado en este análisis.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- Accordion Logic ---
+        const accordionItems = document.querySelectorAll('.accordion-item');
+
+        accordionItems.forEach(item => {
+            const button = item.querySelector('.accordion-button');
+            button.addEventListener('click', () => {
+                // Cierra todos los demás acordeones
+                accordionItems.forEach(otherItem => {
+                    if (otherItem !== item && otherItem.classList.contains('active')) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+                // Abre o cierra el actual
+                item.classList.toggle('active');
+            });
+        });
+
+        // --- Chart.js Logic ---
+        // Configuración común para los gráficos
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#6b7280';
+
+        // 1. Gráfico Socioeconómico
+        const socioeconomicCtx = document.getElementById('socioeconomicChart').getContext('2d');
+        new Chart(socioeconomicCtx, {
+            type: 'bar',
+            data: {
+                labels: ['A/B', 'C+', 'C'],
+                datasets: [{
+                    label: 'Ingreso Promedio Mensual (MXN)',
+                    data: [296197, 112496, 51529],
+                    backgroundColor: ['#4b5563', '#6b7280', '#9ca3af'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value / 1000) + 'K';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Gráfico de Mercado Inmobiliario
+        const marketCtx = document.getElementById('marketChart').getContext('2d');
+        new Chart(marketCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Venta (Lujo)', 'Renta (Gral)'],
+                datasets: [{
+                    label: 'Precio Promedio por m² (MXN)',
+                    data: [118655, 415],
+                    backgroundColor: ['#374151', '#9ca3af'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                 plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                         callbacks: {
+                            label: function(context) {
+                                return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value / 1000) + 'K';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 3. Gráfico de Superficie Máxima de Construcción (SMC)
+        const smcCtx = document.getElementById('smcChart').getContext('2d');
+        new Chart(smcCtx, {
+            type: 'bar',
+            data: {
+                labels: ['SMC'],
+                datasets: [{
+                    label: 'Permitido',
+                    data: [1920],
+                    backgroundColor: '#e5e7eb',
+                    borderRadius: 4,
+                }, {
+                    label: 'Proyectado',
+                    data: [1870],
+                    backgroundColor: '#4b5563',
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                scales: {
+                    x: { stacked: false, title: { display: true, text: 'Metros Cuadrados (m²)' } },
+                    y: { stacked: true }
+                },
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
