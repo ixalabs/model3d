@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Palabras 3D - Estilo Neuronal</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            /* Fondo completamente blanco */
+            background-color: #ffffff; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px; 
+            box-sizing: border-box;
+        }
+        #canvas-container {
+            position: relative;
+            width: 1200px; /* Ancho fijo solicitado */
+            height: 675px; /* Alto calculado para proporción 16:9 (1200 * 9 / 16) */
+            /* El borde blanco se fusiona con el fondo blanco */
+            border: 4px solid white;
+            box-sizing: border-box;
+            flex-shrink: 0; 
+        }
+        /* Asegura que tanto el canvas 3D como las etiquetas HTML llenen el contenedor */
+        #canvas-container > canvas, #canvas-container > div {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .label {
+            color: #333; /* Color de texto oscuro para contraste */
+            font-size: 14px;
+            /* Se quita el text-shadow ya que el fondo es blanco */
+            pointer-events: none; /* Evita que las etiquetas interfieran con los controles del mouse */
+        }
+        #info {
+            position: absolute;
+            top: -30px; /* Coloca el texto fuera, encima del contenedor */
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display:block;
+            color: #555; /* Color oscuro para ser visible en fondo blanco */
+            font-size: 16px;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="canvas-container">
+        <div id="info"></div>
+    </div>
+
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        let scene, camera, renderer, labelRenderer, controls;
+        let points = [];
+        const container = document.getElementById('canvas-container');
+
+        const words = [
+            'Riesgos', 'Contenido', 'Sistema', 'Salud', 'Metales', 'Acceso', 'Enfermedades',
+            'Desastres', 'Vidas', 'Infraestructura', 'Económicos', 'Empleos', 'Turismo',
+            'Sociales', 'Patrimonio', 'Conflictos', 'Ambientales', 'Contaminación',
+            'Biodiversidad', 'Suelo', 'Seguridad', 'Delincuencia', 'Tráfico', 'GruposArmados',
+            'Actores', 'Gobierno', 'Federal', 'Estatal', 'Municipal', 'Sociedad', 'ONGs',
+            'Comunidades', 'Privados', 'Academia', 'Investigadores', 'Universidades',
+            'Medios', 'Prensa', 'Radio', 'Televisión', 'Causas', 'Humanas', 'Minería',
+            'Agricultura', 'Industria', 'Urbanización', 'Naturales', 'Sequías', 'Inundaciones',
+            'Terremotos', 'Problemas', 'Químicos', 'Residuales', 'Sobreexplotación',
+            'Agua', 'Flora', 'Fauna', 'Tratadoras', 'Alcantarillado', 'Rellenos',
+            'Tierra', 'Recursos', 'Políticos', 'Partidos', 'Empresas', 'Sectores',
+            'Soluciones', 'Tecnológicas', 'Tecnología', 'Monitoreo', 'Renovables',
+            'Políticas', 'Leyes', 'Instituciones', 'Participación', 'Educación', 'Campañas',
+            'Organización', 'Incentivos', 'Pagos', 'MercadosVerdes', 'Jurídico',
+            'Constitución', 'Art4', 'Art27', 'Aguas', 'LGEEPA', 'DesarrolloRural',
+            'Normas', 'NOM-001', 'NOM-127', 'Instrumentos', 'Planeación', 'Hídricos',
+            'Ordenamiento', 'DesarrolloUrbano', 'Derechos', 'Sanciones', 'Consejos',
+            'Comités', 'OSC', 'Gubernamentales', 'SEMARNAT', 'CONAGUA', 'PROFEPA', 'IMTA',
+            'CONAFOR', 'SECTUR', 'SALUD', 'NoGubernamentales', 'Financieros', 'Presupuesto',
+            'Inversión', 'Cooperación', 'Humanos', 'Técnicos', 'Promotores', 'Materiales',
+            'Equipos', 'Resultados', 'CalidadAgua', 'Conservación', 'Sustentabilidad',
+            'Indicadores', 'Impacto', 'Morbilidad', 'Ecosistemas', 'Pobreza', 'Gestión',
+            'Inspecciones', 'Multas', 'Resultado', 'Contaminantes', 'Especies', 'Satisfacción'
+        ];
+        
+        const boldWords = new Set([
+            'Riesgos', 'Contenido', 'Sistema', 'Salud', 'Desastres', 'Económicos', 'Sociales', 
+            'Ambientales', 'Seguridad', 'Actores', 'Causas', 'Problemas', 'Conflictos', 
+            'Soluciones', 'Jurídico', 'Instrumentos', 'Recursos', 'Resultados', 'Indicadores',
+            'Gubernamentales', 'NoGubernamentales'
+        ]);
+
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff); // Fondo blanco para la escena
+
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            camera.position.z = 300;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+
+            labelRenderer = new CSS2DRenderer();
+            labelRenderer.setSize(width, height);
+            container.appendChild(labelRenderer.domElement);
+
+            controls = new OrbitControls(camera, labelRenderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 50;
+            controls.maxDistance = 600;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.2;
+
+            createNetwork();
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createNetwork() {
+            const sphereGeometry = new THREE.SphereGeometry(0.5, 8, 8); 
+            const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 }); 
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0xaaaaaa, transparent: true, opacity: 0.5 });
+
+            const totalNodes = words.length;
+            const spread = 350;
+
+            for (let i = 0; i < totalNodes; i++) {
+                const x = THREE.MathUtils.randFloatSpread(spread);
+                const y = THREE.MathUtils.randFloatSpread(spread);
+                const z = THREE.MathUtils.randFloatSpread(spread);
+                
+                const position = new THREE.Vector3(x, y, z);
+                points.push(position);
+
+                const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+                sphere.position.copy(position);
+                scene.add(sphere);
+
+                const word = words[i];
+                const textDiv = document.createElement('div');
+                textDiv.className = 'label';
+                textDiv.textContent = word;
+
+                if (boldWords.has(word)) {
+                    textDiv.style.fontWeight = 'bold';
+                }
+
+                const textLabel = new CSS2DObject(textDiv);
+                textLabel.position.copy(position);
+                scene.add(textLabel);
+            }
+
+            const lineVertices = [];
+            const connections = new Set();
+            const numConnections = 3; 
+
+            for (let i = 0; i < points.length; i++) {
+                const distances = [];
+                for (let j = 0; j < points.length; j++) {
+                    if (i === j) continue;
+                    const distance = points[i].distanceTo(points[j]);
+                    distances.push({ index: j, distance: distance });
+                }
+
+                distances.sort((a, b) => a.distance - b.distance);
+
+                for (let k = 0; k < numConnections; k++) {
+                    if (k >= distances.length) break;
+                    const neighborIndex = distances[k].index;
+                    
+                    const connectionId = i < neighborIndex ? `${i}-${neighborIndex}` : `${neighborIndex}-${i}`;
+                    if (!connections.has(connectionId)) {
+                        const p1 = points[i];
+                        const p2 = points[neighborIndex];
+                        lineVertices.push(p1.x, p1.y, p1.z);
+                        lineVertices.push(p2.x, p2.y, p2.z);
+                        connections.add(connectionId);
+                    }
+                }
+            }
+            
+            const lineGeometry = new THREE.BufferGeometry();
+            lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(lineVertices, 3));
+            const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+            scene.add(lines);
+        }
+
+        function onWindowResize() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(width, height);
+            labelRenderer.setSize(width, height);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+        }
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
