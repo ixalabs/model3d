@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Inmobiliario - C. Varsovia 36, CDMX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff; /* Fondo blanco */
+            color: #111827;
+        }
+        .dashboard-card {
+            background-color: #f9fafb; /* Burbujas en gris muy claro */
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease-in-out;
+        }
+        .dashboard-card-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dashboard-card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .dashboard-card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .icon-rotate {
+            transition: transform 0.3s ease-in-out;
+        }
+        .active .icon-rotate {
+            transform: rotate(180deg);
+        }
+        .stat-card {
+            background-color: #ffffff; /* Fondo de stats blanco para contraste */
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background-color: #f0f2f5;
+            font-weight: 600;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .tag-green {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .tag-blue {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .tag-red {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .tag-yellow {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .tag-purple {
+            background-color: #e9d5ff;
+            color: #581c87;
+        }
+        /* Regla para unificar el tamaño de fuente del contenido */
+        .dashboard-card-content th,
+        .dashboard-card-content td,
+        .dashboard-card-content ul,
+        .dashboard-card-content li,
+        .dashboard-card-content p,
+        .dashboard-card-content h3,
+        .dashboard-card-content h4,
+        .dashboard-card-content strong {
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8">
+
+    <main class="pt-8">
+        <!-- Sección de Normativa y Ubicación -->
+        <div id="normativa" class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h2 class="dashboard-card-title">1. Ubicación y Normativa Urbana</h2>
+                <svg class="w-6 h-6 icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div class="dashboard-card-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Detalles del Predio</h3>
+                        <ul class="list-disc list-inside text-gray-700 space-y-1">
+                            <li><strong>Ubicación:</strong> C. Varsovia 36, Esq. C. Hamburgo, Col. Juárez.</li>
+                            <li><strong>Alcaldía:</strong> Cuauhtémoc, CDMX, C.P. 06600.</li>
+                            <li><strong>Superficie Total:</strong> 300.00 m².</li>
+                            <li><strong>Frente (Varsovia):</strong> 20.00 m.</li>
+                            <li><strong>Frente (Hamburgo):</strong> 15.00 m.</li>
+                            <li><strong>Tipo de Predio:</strong> Esquina.</li>
+                            <li><strong>Cuenta Catastral:</strong> 039_125_22.</li>
+                            <li><strong>Folio Certificado:</strong> SEDUVI-DU-CZ-2025-84521.</li>
+                            <li><strong>Validez Certificado:</strong> Hasta el 18 de junio de 2027.</li>
+                            <li><strong>Designación:</strong> Corredor Turístico, implica normativas de imagen urbana.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Zonificación y Usos de Suelo</h3>
+                        <ul class="list-disc list-inside text-gray-700 space-y-1">
+                            <li><strong>Zonificación:</strong> <span class="font-bold text-blue-600">HM/8/20/M</span> (Habitacional Mixto).</li>
+                            <li><strong>Uso Habitacional:</strong> Vivienda plurifamiliar permitida.</li>
+                            <li><strong>Uso Comercial:</strong> Restaurantes, cafeterías, tiendas de especialidad.</li>
+                            <li><strong>Uso de Servicios:</strong> Oficinas, consultorios, despachos.</li>
+                            <li><strong>Uso Cultural:</strong> Galerías de arte, museos, centros culturales.</li>
+                            <li><strong>Prohibido:</strong> Industria, bodegas, talleres mecánicos.</li>
+                            <li><strong>Prohibido (Social):</strong> Bares, cantinas, centros nocturnos, salones de fiestas.</li>
+                            <li><strong>Prohibido (Salud):</strong> Hospitales y clínicas con hospitalización.</li>
+                            <li><strong>Densidad:</strong> Media, 1 vivienda por cada 50 m² de terreno.</li>
+                            <li><strong>Potencial de Viviendas:</strong> 6 viviendas (300m² / 50m²).</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Normas de Construcción</h3>
+                         <ul class="list-disc list-inside text-gray-700 space-y-1">
+                            <li><strong>Altura Máxima:</strong> 8 niveles sobre banqueta / 28.00 metros.</li>
+                            <li><strong>Exclusión de Altura:</strong> Cuartos de máquinas en azotea no cuentan si son <30% de la superficie.</li>
+                            <li><strong>SMC (Superficie Máx. Construcción):</strong> 1,920.00 m².</li>
+                            <li><strong>COS (Coef. Ocupación Suelo):</strong> 0.80 (desplante máximo de 240.00 m²).</li>
+                            <li><strong>CUS (Coef. Utilización Suelo):</strong> 6.4 (calculado de 0.80 COS x 8 niveles).</li>
+                            <li><strong>Área Libre Mínima:</strong> 20% (60.00 m²), debe ser permeable y ajardinada.</li>
+                            <li><strong>Remetimientos:</strong> No se exige remetimiento frontal, se permite construcción a paramento.</li>
+                            <li><strong>Armonía Urbana (Art. 18):</strong> Se deben respetar alturas y vanos de predios colindantes.</li>
+                            <li><strong>Estacionamiento (Sótanos):</strong> Se permiten hasta 4 niveles de sótano, no cuantifican en SMC.</li>
+                            <li><strong>Estacionamiento (Req.):</strong> 1 cajón por vivienda (<120m²), 1 por cada 40m² de oficina.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Movilidad -->
+        <div id="movilidad" class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h2 class="dashboard-card-title">2. Movilidad y Conectividad</h2>
+                <svg class="w-6 h-6 icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div class="dashboard-card-content">
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                    <div class="stat-card">
+                        <div class="stat-value text-green-600">100/100</div>
+                        <div class="stat-label">Walk Score (Paraíso Peatonal)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">2 Líneas</div>
+                        <div class="stat-label">Metro (L1) y Metrobús (L1, L7)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">Alta</div>
+                        <div class="stat-label">Densidad de Estaciones ECOBICI</div>
+                    </div>
+                     <div class="stat-card">
+                        <div class="stat-value">3 Ejes</div>
+                        <div class="stat-label">Avenidas Principales</div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Vialidades y Acceso</h3>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li><strong>Paseo de la Reforma:</strong> Eje corporativo y turístico más importante.</li>
+                            <li><strong>Av. de los Insurgentes Sur:</strong> Conecta la ciudad de norte a sur.</li>
+                            <li><strong>Av. Chapultepec:</strong> Conexión este-oeste hacia el centro.</li>
+                            <li><strong>Calles Primarias:</strong> Florencia, Amberes, Liverpool.</li>
+                            <li><strong>Calles Secundarias:</strong> Londres, Hamburgo, Tokio, Praga.</li>
+                            <li><strong>Intersección Clave 1:</strong> Reforma e Insurgentes (Glorieta).</li>
+                            <li><strong>Intersección Clave 2:</strong> Florencia y Reforma (Ángel de la Independencia).</li>
+                            <li><strong>Intersecciones Controladas:</strong> Presencia de semáforos para gestionar el alto flujo.</li>
+                             <li><strong>Señalización Clara:</strong> Nombres de calles claramente señalizados en el pavimento.</li>
+                             <li><strong>Riesgo de Congestión:</strong> Alto potencial de tráfico en horas pico.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Transporte Público y Alternativo</h3>
+                         <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li><strong>Metro Sevilla:</strong> Aprox. 430m / 8 min a pie.</li>
+                            <li><strong>Metro Insurgentes:</strong> Aprox. 235m / 4-7 min a pie.</li>
+                            <li><strong>Metrobús Línea 7 (Reforma):</strong> Estación "El Ángel" a 290m / 5 min a pie.</li>
+                            <li><strong>Metrobús Línea 1 (Insurgentes):</strong> Estación "Hamburgo" a menos de 500m.</li>
+                            <li><strong>ECOBICI:</strong> Cicloestación a 2 cuadras, fomentando la micromovilidad.</li>
+                            <li><strong>Ciclovía:</strong> Carril dedicado en Paseo de la Reforma.</li>
+                            <li><strong>Taxis Oficiales:</strong> Abundante presencia indica buenas opciones de movilidad.</li>
+                            <li><strong>Autobús (RTP):</strong> Parada en Av. Chapultepec - Varsovia a 195m / 3 min.</li>
+                            <li><strong>Movilidad Diversa:</strong> Ecosistema con autos, vans, motocicletas y taxis.</li>
+                            <li><strong>Demanda de Estacionamiento:</strong> Alta, confirmada por publicidad de estacionamientos públicos.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Servicios del Entorno -->
+        <div id="servicios" class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h2 class="dashboard-card-title">3. Servicios del Entorno</h2>
+                <svg class="w-6 h-6 icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div class="dashboard-card-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                    <div>
+                        <h4 class="font-semibold mb-2">Gastronomía</h4>
+                        <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                            <li><strong>Alta Cocina:</strong> Cityzen, Prime Steak Club, Fifty Mils, Les Moustaches.</li>
+                            <li><strong>Iconos Populares:</strong> La Casa de Toño, Taquería Orinoco, El Califa de León.</li>
+                            <li><strong>Cocina Internacional:</strong> Goguinara (Coreana), Don Asado (Uruguaya), Tokio Ramen (Japonesa).</li>
+                            <li><strong>Cadenas Premium:</strong> Shake Shack, Le Pain Quotidien.</li>
+                            <li><strong>Cafeterías:</strong> El Péndulo, Maison Kayser, Starbucks, Cielito Querido.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Alojamiento</h4>
+                        <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                            <li><strong>Lujo 5 Estrellas:</strong> The St. Regis, Four Seasons, Sofitel, Marquis Reforma.</li>
+                            <li><strong>Negocios:</strong> NH Collection, Galería Plaza, Fiesta Americana.</li>
+                            <li><strong>Histórico:</strong> Hotel Geneve (con museo propio).</li>
+                            <li><strong>Suites:</strong> Eurostars Zona Rosa, Suites Capri, Reforma Capital Inn.</li>
+                            <li><strong>Total Habitaciones:</strong> Más de 3,166 habitaciones estimadas en la zona.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Corporativo y Financiero</h4>
+                        <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                            <li><strong>Coworking:</strong> WeWork, go-offices, Net(work) Reforma.</li>
+                            <li><strong>Empresas Tech:</strong> Oficinas DiDi, Uber, Rappi.</li>
+                            <li><strong>Grandes Torres:</strong> Torre Reforma, Torre BBVA, Capital Reforma.</li>
+                             <li><strong>Bancos:</strong> Sucursales de Citibanamex, BBVA, Santander, HSBC, Bansi.</li>
+                            <li><strong>Embajadas:</strong> Embajada de EEUU y Japón, CAS VISA USA.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Comercio y Retail</h4>
+                        <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                            <li><strong>Conveniencia 24/7:</strong> 7-Eleven (en la esquina), OXXO, Circle K.</li>
+                            <li><strong>Mercado Local:</strong> Mercado Juárez (productos frescos y fondas).</li>
+                            <li><strong>Supermercados Asiáticos:</strong> Lianhua, I Love K-Food, Asiaon Mart.</li>
+                            <li><strong>Especializadas:</strong> Miniso, Librería Porrúa, The Body Shop, Steren.</li>
+                            <li><strong>Joyería y Moda:</strong> Joyería Bizzarro, Rio Bravo Casimires.</li>
+                        </ul>
+                    </div>
+                     <div>
+                        <h4 class="font-semibold mb-2">Salud y Bienestar</h4>
+                        <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                            <li><strong>Gimnasios:</strong> Sports World, Smart Fit.</li>
+                            <li><strong>Farmacias:</strong> Cadenas como Farmacias del Ahorro y San Pablo.</li>
+                            <li><strong>Clínicas Especializadas:</strong> Nefrocen (Nefrología), Clínica de la Mujer.</li>
+                            <li><strong>Salud Dental:</strong> Dentalia.</li>
+                            <li><strong>Ópticas y Belleza:</strong> Devlyn Ópticas, Silvia Galván Image Studio.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Cultura y Entretenimiento</h4>
+                        <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                            <li><strong>Monumentos:</strong> Ángel de la Independencia, Diana Cazadora, Monumento a Cuauhtémoc.</li>
+                            <li><strong>Cines y Teatros:</strong> Cinépolis Diana, Teatro Milán, Foro Lucerna.</li>
+                            <li><strong>Museos:</strong> Museo de Cera, Museo de Ripley, Museo del Chocolate (MUCHO).</li>
+                            <li><strong>Centros Culturales:</strong> Casa de Francia / Mediateca IFAL.</li>
+                            <li><strong>Idiomas:</strong> Talent English Varsovia, Global Link Studies.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de Análisis Climático -->
+        <div id="clima" class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h2 class="dashboard-card-title">4. Análisis Climático</h2>
+                <svg class="w-6 h-6 icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div class="dashboard-card-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                    <div class="stat-card">
+                        <div class="stat-value">16-18°C</div>
+                        <div class="stat-label">Temp. Promedio Anual</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">+3-4°C</div>
+                        <div class="stat-label">Efecto Isla de Calor (ICU)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">870.9 mm</div>
+                        <div class="stat-label">Precipitación Anual</div>
+                    </div>
+                     <div class="stat-card">
+                        <div class="stat-value">76 (Buena)</div>
+                        <div class="stat-label">Calidad del Aire (AQI)</div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+                    <div>
+                        <h3 class="font-semibold text-center mb-2">Oscilación Térmica Diaria (°C)</h3>
+                        <canvas id="tempChart"></canvas>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-center mb-2">Humedad Relativa Mensual (%)</h3>
+                        <canvas id="humidityChart"></canvas>
+                    </div>
+                </div>
+                 <div class="mt-6">
+                    <h3 class="font-semibold text-lg mb-2">Datos y Estrategias Clave</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>Vientos Dominantes:</strong> Del Noreste (NE) en Otoño/Invierno y del Sur/Suroeste (S/SW) en Primavera/Verano.</li>
+                        <li><strong>Temporada de Lluvias:</strong> Julio y Agosto son los meses más lluviosos, concentrando >75% de la precipitación.</li>
+                        <li><strong>Temporada Seca:</strong> Marzo y Abril son los meses más secos y con menor humedad (42-43%).</li>
+                        <li><strong>Horas de Luz:</strong> Varían de 11h 01m (Diciembre) a 13h 20m (Junio).</li>
+                        <li><strong>Trayectoria Solar:</strong> Sol alto (casi cenital) en verano y sol bajo en invierno.</li>
+                        <li><strong>Herramienta Solar:</strong> Se recomienda usar la app "Andrew Marsh Solar Tools" para modelar sombras.</li>
+                        <li><strong>Diseño Pasivo:</strong> Usar masa térmica para absorber calor de día y liberarlo de noche.</li>
+                        <li><strong>Sombreado Fachadas E/O:</strong> Usar elementos verticales (aletas, vegetación caduca) es crucial.</li>
+                        <li><strong>Contaminante Principal:</strong> Partículas PM10.</li>
+                        <li><strong>Inclinación Solar Óptima:</strong> Paneles orientados al sur con inclinación de ~20°.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Mercado Inmobiliario -->
+        <div id="mercado" class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h2 class="dashboard-card-title">5. Análisis de Mercado Inmobiliario</h2>
+                <svg class="w-6 h-6 icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div class="dashboard-card-content">
+                <div class="mt-4">
+                    <h3 class="font-semibold text-xl mb-4">Mercado Residencial</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="stat-card">
+                            <div class="stat-value">106 m²</div>
+                            <div class="stat-label">Tamaño Prom. Venta</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$82,311</div>
+                            <div class="stat-label">$/m² Promedio Venta</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">83 m²</div>
+                            <div class="stat-label">Tamaño Prom. Renta</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$415</div>
+                            <div class="stat-label">$/m² Promedio Renta</div>
+                        </div>
+                    </div>
+                     <ul class="list-disc list-inside space-y-1 text-gray-700 mb-4">
+                        <li><strong>Configuración Venta Más Común:</strong> 2 recámaras y 2 baños.</li>
+                        <li><strong>Configuración Renta Más Común:</strong> 1 recámara y 1 baño.</li>
+                        <li><strong>Ticket Promedio Venta:</strong> $8,847,915 MXN.</li>
+                        <li><strong>Ticket Promedio Renta:</strong> $28,850 MXN.</li>
+                        <li><strong>Amenidades Clave (Venta):</strong> Seguridad 24/7, Roof Garden, Gimnasio, Alberca, Coworking.</li>
+                        <li><strong>Propuesta de Valor Renta:</strong> Flexibilidad, opción de amueblado y equipado, a veces sin aval.</li>
+                        <li><strong>Valor por m² (Renta):</strong> Los deptos. pequeños (lofts, 1 rec) tienen un costo relativo por espacio más elevado.</li>
+                    </ul>
+                </div>
+                <div class="mt-6">
+                    <h3 class="font-semibold text-xl mb-4">Mercado de Oficinas y Locales</h3>
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="stat-card">
+                            <div class="stat-value">285 m²</div>
+                            <div class="stat-label">Tamaño Promedio Oficina</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$450/m²</div>
+                            <div class="stat-label">Renta Promedio Oficina</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$550/m²</div>
+                            <div class="stat-label">Renta Promedio Local Comercial</div>
+                        </div>
+                    </div>
+                     <ul class="list-disc list-inside space-y-1 text-gray-700 mb-4">
+                        <li><strong>Rango de Renta (Oficinas):</strong> Desde $300/m² (Clase B) hasta $580/m² (Clase A+).</li>
+                        <li><strong>Ticket Promedio (Local):</strong> $75,000 MXN.</li>
+                        <li><strong>Amenidades Clave (Oficinas):</strong> Certificación LEED, valet parking, salas de juntas equipadas.</li>
+                        <li><strong>Tendencia:</strong> Mercado resiliente con vacancia a la baja y precios estables/al alza en edificios premium.</li>
+                        <li><strong>Flexibilidad:</strong> Creciente oferta de espacios "Plug & Play" (listos para usar).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Perfil Socioeconómico y Demográfico -->
+        <div id="socioeconomico" class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h2 class="dashboard-card-title">6. Perfil Socioeconómico y Demográfico</h2>
+                <svg class="w-6 h-6 icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div class="dashboard-card-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Niveles Socioeconómicos y Vocación</h3>
+                        <p class="text-gray-600 mb-4">La zona es un clúster de los dos estratos más altos de la CDMX.</p>
+                        <div class="space-y-3">
+                            <div class="p-4 rounded-lg bg-purple-50 border border-purple-200">
+                                <p class="font-bold text-purple-800">Nivel A/B (Alto)</p>
+                                <p class="text-xl font-semibold text-purple-900">$296,197 <span class="text-sm font-normal">Ingreso Prom. Mensual</span></p>
+                            </div>
+                            <div class="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                                <p class="font-bold text-blue-800">Nivel C+ (Medio Alto)</p>
+                                <p class="text-xl font-semibold text-blue-900">$112,496 <span class="text-sm font-normal">Ingreso Prom. Mensual</span></p>
+                            </div>
+                        </div>
+                         <ul class="list-disc list-inside space-y-1 text-gray-700 mt-4 text-sm">
+                            <li><strong>Motor Económico 1:</strong> Servicios Profesionales ($295,177M de producción bruta).</li>
+                            <li><strong>Motor Económico 2:</strong> Industrias Manufactureras ($152,616M de producción bruta).</li>
+                            <li><strong>Hub Fintech:</strong> Presencia de empresas como Revolut y Dolarapp.</li>
+                            <li><strong>Nicho Cultural:</strong> La comunidad coreana ("K-Town") añade una dimensión económica única.</li>
+                             <li><strong>Legado Histórico:</strong> La arquitectura Porfiriana es un activo económico tangible.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Datos Demográficos (Alcaldía Cuauhtémoc)</h3>
+                        <p class="text-gray-600 mb-4">Censo 2020, INEGI.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="stat-card"><div class="stat-value">545,884</div><div class="stat-label">Población Total</div></div>
+                            <div class="stat-card"><div class="stat-value">284,933</div><div class="stat-label">Población Femenina</div></div>
+                            <div class="stat-card"><div class="stat-value">260,951</div><div class="stat-label">Población Masculina</div></div>
+                            <div class="stat-card"><div class="stat-value">196,593</div><div class="stat-label">Viviendas Habitadas</div></div>
+                        </div>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700 mt-4 text-sm">
+                            <li><strong>Habitantes por Vivienda:</strong> ~2.78, sugiere hogares pequeños (solteros, parejas).</li>
+                            <li><strong>Empleo (Finanzas):</strong> 119,156 personas en Servicios Financieros y de Seguros.</li>
+                            <li><strong>Empleo (Comercio):</strong> 109,768 personas en Comercio al por Mayor.</li>
+                            <li><strong>Empleo (Servicios):</strong> 70,310 personas en Alojamiento y Alimentos.</li>
+                            <li><strong>Ubicación Geográfica:</strong> Latitud 19.441, Longitud -99.151.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Análisis de Créditos y Financiamiento -->
+        <div id="creditos" class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h2 class="dashboard-card-title">7. Análisis de Créditos y Financiamiento</h2>
+                <svg class="w-6 h-6 icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div class="dashboard-card-content">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
+                    <div>
+                        <h3 class="font-semibold text-xl mb-4">Perfil y Patrones del Crédito</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><strong>Edad Productiva:</strong> El 80% de los créditos se concentra en el rango de 30 a 59 años.</li>
+                            <li><strong>Ingresos Altos:</strong> El nivel salarial ">12 UMA" acumula el mayor número y monto de créditos.</li>
+                            <li><strong>Motor Financiero:</strong> La Banca Comercial otorga ~$7 mil millones MXN, más del doble que INFONAVIT (~$1.57 mil millones).</li>
+                            <li><strong>Destino Principal:</strong> Adquisición de "Vivienda Nueva" y "Vivienda Existente".</li>
+                            <li><strong>Tipo de Vivienda Financiada:</strong> Principalmente "Residencial" y "Media".</li>
+                            <li><strong>Estacionalidad:</strong> Se observan picos de actividad crediticia en Marzo y Abril.</li>
+                            <li><strong>Crédito Social:</strong> En créditos para mejoras (enfocados en zonas indígenas), las mujeres son las principales beneficiarias.</li>
+                            <li><strong>Créditos Hombres:</strong> 2,621 créditos por ~$3.48 mil millones MXN.</li>
+                            <li><strong>Créditos Mujeres:</strong> 2,650 créditos por ~$3.50 mil millones MXN.</li>
+                            <li><strong>Tendencia en Cuauhtémoc:</strong> Desarrollo enfocado en vivienda vertical de alto valor (>190 UMA) y 2 recámaras.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-xl mb-4 text-center">Créditos por Institución (Monto Total)</h3>
+                        <canvas id="financiamientoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Impacto Macroeconómico -->
+        <div id="macro" class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h2 class="dashboard-card-title">8. Análisis de Impacto Macroeconómico</h2>
+                <svg class="w-6 h-6 icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div class="dashboard-card-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                    <div>
+                        <h4 class="font-semibold mb-2">Inflación (4.42%)</h4>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            <li class="text-red-600"><strong>Negativo:</strong> Aumenta costos de construcción.</li>
+                            <li class="text-red-600"><strong>Negativo:</strong> Erosiona poder adquisitivo del comprador.</li>
+                            <li class="text-green-600"><strong>Positivo:</strong> El inmueble se vuelve un "activo refugio".</li>
+                            <li class="text-green-600"><strong>Positivo:</strong> Acelera la plusvalía nominal.</li>
+                            <li class="text-green-600"><strong>Positivo:</strong> "Licúa" la deuda del desarrollador a tasa fija.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Tasa de Interés / TIIE (8.50%)</h4>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            <li class="text-red-600"><strong>Negativo:</strong> Encalece créditos hipotecarios (>10-11%).</li>
+                            <li class="text-red-600"><strong>Negativo:</strong> Aumenta costo de crédito puente para el proyecto.</li>
+                            <li class="text-green-600"><strong>Positivo:</strong> Filtra el mercado a compradores más sólidos (mayor enganche).</li>
+                            <li class="text-green-600"><strong>Positivo:</strong> Tendencia a la baja (pronóstico ~7.51%) es buen argumento de venta.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">PIB (~0.2%)</h4>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            <li class="text-red-600"><strong>Negativo:</strong> Incertidumbre laboral pospone compras.</li>
+                            <li class="text-red-600"><strong>Negativo:</strong> Menor expansión de empresas y demanda corporativa.</li>
+                            <li class="text-green-600"><strong>Positivo:</strong> Obliga a enfocar en el nicho resiliente de la zona.</li>
+                            <li class="text-green-600"><strong>Positivo:</strong> Puede reducir la competencia futura de otros desarrollos.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entorno y Biodiversidad -->
+        <div id="entorno" class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h2 class="dashboard-card-title">9. Entorno, Paisajismo y Biodiversidad</h2>
+                <svg class="w-6 h-6 icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div class="dashboard-card-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Selección Estratégica de Árboles</h3>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li><strong>Jacaranda:</strong> 12-20m de altura, sombra densa, forma ovoidal.</li>
+                            <li><strong>Fresno:</strong> 15-30m de altura, sombra densa, forma esférica.</li>
+                            <li><strong>Pirul Común:</strong> 8-15m de altura, sombra ligera, forma irregular/péndula.</li>
+                            <li><strong>Trueno:</strong> 10m de altura, sombra densa, forma ovoidal.</li>
+                            <li><strong>Liquidámbar:</strong> 25-35m de altura, sombra densa, forma piramidal.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Fauna Local a Atraer</h3>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li><strong>Pinzón Mexicano:</strong> Pájaro cantor con pecho rojo.</li>
+                            <li><strong>Colibrí Pico Ancho:</strong> Polinizador vibrante, indicador de jardín saludable.</li>
+                            <li><strong>Cuitlacoche Pico Curvo:</strong> Busca insectos en el suelo, indicador de hábitat sano.</li>
+                            <li><strong>Tlacuache Norteño:</strong> Único marsupial, "limpiador" del ecosistema.</li>
+                            <li><strong>Ardilla Gris Mexicana:</strong> "Jardinera olvidadiza", dispersa semillas.</li>
+                        </ul>
+                    </div>
+                </div>
+                 <div class="mt-6">
+                    <h3 class="font-semibold text-lg mb-2">Estrategias Clave de Paisajismo</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>Ingeniería Ambiental:</strong> Usar el paisaje para combatir activamente la contaminación y gestionar el agua.</li>
+                        <li><strong>Ecosistema Estratificado:</strong> Combinar árboles, arbustos y cubresuelos para maximizar nichos para la fauna.</li>
+                        <li><strong>Polinators Hotspots:</strong> Agrupar masivamente plantas con flores para crear focos de atracción visual.</li>
+                        <li><strong>Filtro de Aire Nativo:</strong> El Fresno (Fraxinus uhdei) es excepcionalmente eficaz para filtrar contaminantes.</li>
+                        <li><strong>Color y Sonido Anual:</strong> La Tronadora (Tecoma stans) florece casi todo el año, asegurando color y atrayendo colibríes.</li>
+                        <li><strong>Marketing Sensorial:</strong> Integrar plantas con fragancia como el Pitosporo Enano ("aroma a azahar").</li>
+                        <li><strong>Política Cero Pesticidas:</strong> Posicionar el desarrollo como un santuario ecológico.</li>
+                        <li><strong>La Fauna como Amenidad:</strong> Convertir la atracción de aves y mariposas en un diferenciador de marketing.</li>
+                        <li><strong>Color Otoñal:</strong> Usar Liquidámbar para diferenciarse del paisaje genérico de la ciudad.</li>
+                        <li><strong>Co-creación con la Fauna:</strong> Comunicar cómo la ardilla es una aliada en la reforestación.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conclusiones Estratégicas -->
+        <div id="conclusiones" class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h2 class="dashboard-card-title">10. Conclusiones y "Joyitas" Estratégicas</h2>
+                <svg class="w-6 h-6 icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div class="dashboard-card-content">
+                <div class="mt-4 space-y-2 text-gray-800">
+                    <ul class="list-decimal list-inside space-y-2">
+                        <li><strong>Ecosistema Validado:</strong> La simbiosis entre la oferta (lujo vertical), la demanda (profesionales de altos ingresos) y el financiamiento (banca comercial) está comprobada.</li>
+                        <li><strong>Perfil de Cliente Triple:</strong> Diseñar para el Residente Permanente, el Viajero de Negocios y el Turista, permitiendo modelos de renta flexible y "lock-off".</li>
+                        <li><strong>Tipología "Estándar de Oro":</strong> La configuración de 2 recámaras y 2 baños es el producto más líquido y seguro para el mercado.</li>
+                        <li><strong>Amenidades como Diferenciador:</strong> Un Business Center es indispensable; un Roof Garden con vistas es un lujo deseable que define el proyecto.</li>
+                        <li><strong>Narrativa de "Ciudad Global":</strong> Vender la participación en un epicentro mundial, no solo un apartamento.</li>
+                        <li><strong>Activo Refugio:</strong> En un entorno macroeconómico incierto, la ubicación "Triple A" atrae a compradores que buscan proteger su capital.</li>
+                        <li><strong>Marca Pre-establecida:</strong> La presencia de WeWork, Revolut y otras Fintechs ya posiciona la zona como un hub de innovación.</li>
+                        <li><strong>Patrimonio como Activo:</strong> La arquitectura histórica de la colonia se traduce directamente en valor económico premium.</li>
+                        <li><strong>Economía 24 Horas:</strong> La Zona Rosa garantiza actividad económica y vibración constante, aumentando el atractivo.</li>
+                        <li><strong>Inversión de Bajo Riesgo Relativo:</strong> La resiliencia del área, sostenida por múltiples bases de clientes (turismo, finanzas, residentes), reduce el riesgo.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center mt-8 text-gray-500 text-sm">
+        <p>Dashboard generado en Julio. Datos basados en los documentos proporcionados.</p>
+    </footer>
+
+    <script>
+        // Script para la funcionalidad de acordeón
+        const cardHeaders = document.querySelectorAll('.dashboard-card-header');
+
+        cardHeaders.forEach(clickedHeader => {
+            clickedHeader.addEventListener('click', () => {
+                const clickedCard = clickedHeader.parentElement;
+                const clickedContent = clickedCard.querySelector('.dashboard-card-content');
+
+                // Close all other cards
+                cardHeaders.forEach(header => {
+                    const card = header.parentElement;
+                    if (card !== clickedCard) {
+                        card.classList.remove('active');
+                        card.querySelector('.dashboard-card-content').style.maxHeight = null;
+                    }
+                });
+
+                // Toggle the clicked card
+                clickedCard.classList.toggle('active');
+                if (clickedCard.classList.contains('active')) {
+                    clickedContent.style.maxHeight = clickedContent.scrollHeight + "px";
+                } else {
+                    clickedContent.style.maxHeight = null;
+                }
+            });
+        });
+
+        // Datos y configuración de los gráficos
+        const tempCtx = document.getElementById('tempChart').getContext('2d');
+        const tempChart = new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '03:00', '06:00 (Min)', '09:00', '12:00', '15:00 (Max)', '18:00', '21:00'],
+                datasets: [{
+                    label: 'Temperatura Promedio (°C)',
+                    data: [14.1, 12.8, 12.2, 16.3, 20.8, 22.5, 19.8, 15.8],
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(37, 99, 235, 1)'
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: false } },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+        const humidityChart = new Chart(humidityCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                datasets: [{
+                    label: 'Humedad Relativa (%)',
+                    data: [55, 49, 43, 42, 50, 62, 68, 69, 72, 66, 60, 57],
+                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: false, max: 100 } },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        const financiamientoCtx = document.getElementById('financiamientoChart').getContext('2d');
+        const financiamientoChart = new Chart(financiamientoCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Banca Comercial', 'INFONAVIT', 'FOVISSSTE y otros'],
+                datasets: [{
+                    label: 'Monto Total Financiado',
+                    data: [7008343212, 1570103185, 100000000], // Dato de Fovissste es estimado para visualización
+                    backgroundColor: [
+                        'rgba(37, 99, 235, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(209, 213, 219, 0.8)'
+                    ],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(context.parsed);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
